@@ -7,9 +7,9 @@ module.exports = {
     name: "help",
     aliases: ["menu", "commands"],
     version: "6.2",
-    author: "EryXenX",
-    shortDescription: "Show all commands",
-    longDescription: "Show all commands in clean UI",
+    author: "GHOST",
+    shortDescription: "عرض جميع الأوامر",
+    longDescription: "عرض قائمة الأوامر بشكل منظم",
     category: "system",
     guide: "{pn}help [command name]"
   },
@@ -43,58 +43,106 @@ module.exports = {
         return map[c] || c;
       }).join("");
 
-    const cleanCategoryName = (text) => text ? text.toLowerCase() : "others";
+    const tr = {
+      "4k": "تحسين الصور بدقة 4K",
+      "age": "معرفة العمر",
+      "liner": "مساعد ذكاء اصطناعي",
+      "prompt": "إنشاء برومبت",
+      "remini": "تحسين جودة الصور",
+      "weather": "الطقس",
+      "webinfo": "معلومات موقع",
+      "youai": "دردشة ذكاء اصطناعي",
 
-    if (args[0]) {
-      const cmdName = args[0].toLowerCase();
-      const cmd =
-        allCommands.get(cmdName) ||
-        [...allCommands.values()].find(c => c.config.aliases?.includes(cmdName));
+      "accept": "قبول الطلبات",
+      "fbcover": "إنشاء غلاف فيسبوك",
+      "pastebin": "رفع نص",
+      "qrgen": "إنشاء رمز QR",
+      "translate": "ترجمة",
+      "uid": "معرفة UID",
+      "webss": "تصوير موقع",
 
-      if (!cmd)
-        return message.reply(`❌ Command '${cmdName}' not found!`);
+      "activemember": "الأعضاء النشطون",
+      "adduser": "إضافة عضو",
+      "admin": "المشرفون",
+      "all": "منشن الجميع",
+      "allbox": "جميع المجموعات",
+      "antichangeinfobox": "منع تعديل معلومات المجموعة",
+      "autosetname": "تعيين اسم تلقائي",
+      "baby": "طفل المجموعة",
+      "badwords": "الكلمات المحظورة",
+      "ban": "حظر عضو",
+      "boxinfo": "معلومات المجموعة",
+      "busy": "وضع الانشغال",
+      "count": "عدد الأعضاء",
+      "emoji": "تغيير الإيموجي",
+      "filteruser": "تصفية الأعضاء",
+      "lock": "قفل المجموعة",
+      "onlyadminbox": "للمشرفين فقط",
+      "refresh": "تحديث",
+      "rules": "القوانين",
+      "sendnoti": "إرسال إشعار",
+      "setname": "تغيير الاسم",
+      "tid": "معرف المجموعة",
+      "unsend": "حذف الرسالة",
+      "warn": "إنذار",
 
-      const usage = typeof cmd.config.guide === "string"
-        ? cmd.config.guide.replace("{pn}", cmd.config.name)
-        : cmd.config.name;
+      "adminmention": "منشن المشرفين",
+      "anti_isis_leave": "منع الخروج التلقائي",
+      "autoreact": "ردود تلقائية",
+      "autoseen": "مشاهدة تلقائية",
+      "delete": "حذف",
+      "fork": "معلومات النسخة",
+      "help": "المساعدة",
+      "join": "الانضمام",
+      "text_voice": "تحويل نص لصوت",
+      "up": "فحص التشغيل",
 
-      const infoMsg =
-`╭─ 𝐂𝐎𝐌𝐌𝐀𝐍𝐃 𝐈𝐍𝐅𝐎
-│ 🧩 ${fancyFont(cmd.config.name)}
-│ 🔗 ${cmd.config.aliases?.join(", ") || "None"}
-│ 📁 ${categoryFont((cmd.config.category || "Others").toUpperCase())}
-│ ⚙️ v${cmd.config.version || "1.0"}
-│ 👑 ${cmd.config.author || "Unknown"}
-│ 📝 ${(cmd.config.longDescription || cmd.config.shortDescription || "No description").slice(0, 40)}
-│ 🚀 ${prefix}${usage}
-╰────────────`;
+      "adminonly": "للمالك فقط",
+      "backupdata": "نسخ احتياطي",
+      "clear": "مسح البيانات",
+      "eval": "تنفيذ كود",
+      "event": "إدارة الأحداث",
+      "filecmd": "أوامر الملفات",
+      "getfbstate": "حالة فيسبوك",
+      "kick": "طرد عضو",
+      "kickall": "طرد الجميع",
+      "restart": "إعادة تشغيل",
+      "setlang": "تغيير اللغة",
+      "update": "تحديث البوت"
+    };
 
-      return message.reply(infoMsg);
-    }
+    const formatCommands = (cmds) =>
+      cmds
+        .sort()
+        .map(c => `• ${fancyFont(c)} — ${tr[c] || "بدون وصف"}`)
+        .join("\n");
 
     const categories = {};
-
     for (const [name, cmd] of allCommands) {
-      const cat = cleanCategoryName(cmd.config.category);
+      const cat = (cmd.config.category || "others").toLowerCase();
       if (!categories[cat]) categories[cat] = [];
       categories[cat].push(name);
     }
 
-    const formatCommands = (cmds) =>
-      cmds.sort().map(c => `• ${fancyFont(c)}`).join("\n");
-
     let msg =
-`╭─ 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒
-│ 🔧 ${prefix}
-│ 📊 ${allCommands.size} commands
+`╭─『 🤖 GHOST BOT 』
+│ 📊 ${allCommands.size} أمر
 ╰────────────\n`;
 
+    const categoryNames = {
+      ai: "𝙰𝙸",
+      utility: "𝚄𝚃𝙸𝙻𝙸𝚃𝚈",
+      box: "𝙱𝙾𝚇 𝙲𝙷𝙰𝚃",
+      system: "𝚂𝚈𝚂𝚃𝙴𝙼",
+      owner: "𝙾𝚆𝙽𝙴𝚁"
+    };
+
     for (const cat of Object.keys(categories)) {
-      msg += `\n${categoryFont(cat.toUpperCase())}\n`;
+      msg += `\n${categoryFont(categoryNames[cat] || cat.toUpperCase())}\n`;
       msg += formatCommands(categories[cat]) + "\n";
     }
 
-    msg += `\nUse: ${prefix}help <command>`;
+    msg += `\nاكتب: ${prefix}help <اسم_الأمر>`;
 
     const gifURLs = [
       "https://i.imgur.com/Xw6JTfn.gif",
@@ -136,4 +184,4 @@ function downloadGif(url, dest) {
       reject(err);
     });
   });
-}
+            }
