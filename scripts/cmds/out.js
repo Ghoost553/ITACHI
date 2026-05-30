@@ -5,11 +5,11 @@ module.exports = {
     author: "MOHAMMAD AKASH",
     countDown: 5,
     role: 2,
-    shortDescription: "বটকে গ্রুপ থেকে বের করে দেওয়া",
-    longDescription: "এই কমান্ডের মাধ্যমে বটকে বর্তমান বা নির্দিষ্ট গ্রুপ থেকে বের করে দেওয়া হয়।",
+    shortDescription: "إخراج البوت من المجموعة",
+    longDescription: "هذا الأمر يجعل البوت يغادر المجموعة الحالية أو مجموعة محددة",
     category: "owner",
     guide: {
-      en: "{pn} [threadID (optional)]",
+      en: "{pn} [threadID (اختياري)]",
     },
   },
 
@@ -18,11 +18,14 @@ module.exports = {
     const targetThread = args[0] || event.threadID;
 
     try {
-      await api.sendMessage("👋 আলবিদা সবাই! আমি এখন গ্রুপ থেকে বের হচ্ছি...", targetThread);
+      await api.sendMessage("👋 وداعاً جميعاً! سأغادر المجموعة الآن...", targetThread);
       await api.removeUserFromGroup(botID, targetThread);
     } catch (error) {
       console.error(error);
-      return api.sendMessage("❌ বের হতে পারলাম না! হয়তো আমি অ্যাডমিন না বা কোনো সমস্যা হয়েছে।", event.threadID);
+      return api.sendMessage(
+        "❌ لم أستطع المغادرة! ربما لست أدمن أو حدث خطأ.",
+        event.threadID
+      );
     }
   },
 };
