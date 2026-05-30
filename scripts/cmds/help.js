@@ -9,104 +9,83 @@ module.exports = {
     version: "7.0",
     author: "GHOST",
     shortDescription: "عرض جميع الأوامر",
-    longDescription: "قائمة أوامر منظمة وجميلة",
+    longDescription: "قائمة أوامر تلقائية",
     category: "system",
     guide: "{pn}help [command]"
   },
 
   onStart: async function ({ message, args, prefix }) {
-    const cmds = global.GoatBot.commands;
+    const allCommands = global.GoatBot.commands;
 
-    const fancy = (t) => t.replace(/[a-z]/gi, c => {
-      const m = {
-        a:"𝐚",b:"𝐛",c:"𝐜",d:"𝐝",e:"𝐞",f:"𝐟",g:"𝐠",h:"𝐡",
-        i:"𝐢",j:"𝐣",k:"𝐤",l:"𝐥",m:"𝐦",n:"𝐧",o:"𝐨",p:"𝐩",
-        q:"𝐪",r:"𝐫",s:"𝐬",t:"𝐭",u:"𝐮",v:"𝐯",w:"𝐰",x:"𝐱",
-        y:"𝐲",z:"𝐳"
-      };
-      return m[c.toLowerCase()] || c;
-    });
+    const fancyFont = (str = "") =>
+      str.replace(/[A-Za-z]/g, (c) => {
+        const map = {
+          A:"𝐀",B:"𝐁",C:"𝐂",D:"𝐃",E:"𝐄",F:"𝐅",G:"𝐆",H:"𝐇",
+          I:"𝐈",J:"𝐉",K:"𝐊",L:"𝐋",M:"𝐌",N:"𝐍",O:"𝐎",P:"𝐏",
+          Q:"𝐐",R:"𝐑",S:"𝐒",T:"𝐓",U:"𝐔",V:"𝐕",W:"𝐖",X:"𝐗",
+          Y:"𝐘",Z:"𝐙",
+          a:"𝐚",b:"𝐛",c:"𝐜",d:"𝐝",e:"𝐞",f:"𝐟",g:"𝐠",h:"𝐡",
+          i:"𝐢",j:"𝐣",k:"𝐤",l:"𝐥",m:"𝐦",n:"𝐧",o:"𝐨",p:"𝐩",
+          q:"𝐪",r:"𝐫",s:"𝐬",t:"𝐭",u:"𝐮",v:"𝐯",w:"𝐰",x:"𝐱",
+          y:"𝐲",z:"𝐳"
+        };
+        return map[c] || c;
+      });
 
-    // 🎯 وصف تلقائي
-    const desc = (cmd) => {
-      const d = {
-        4k: "تحسين الصور بدقة 4K",
-        age: "معرفة العمر",
-        liner: "مساعد ذكاء اصطناعي",
-        prompt: "إنشاء برومبت",
-        remini: "تحسين جودة الصور",
-        weather: "الطقس",
-        webinfo: "معلومات موقع",
-        youai: "دردشة ذكاء اصطناعي",
+    const categoryFont = (str = "") =>
+      str.split("").map(c => {
+        const map = {
+          A:"𝙰",B:"𝙱",C:"𝙲",D:"𝙳",E:"𝙴",F:"𝙵",G:"𝙶",H:"𝙷",
+          I:"𝙸",J:"𝙹",K:"𝙺",L:"𝙻",M:"𝙼",N:"𝙽",O:"𝙾",P:"𝙿",
+          Q:"𝚀",R:"𝚁",S:"𝚂",T:"𝚃",U:"𝚄",V:"𝚅",W:"𝚆",X:"𝚇",
+          Y:"𝚈",Z:"𝚉"
+        };
+        return map[c] || c;
+      }).join("");
 
-        accept: "قبول الطلبات",
-        fbcover: "إنشاء غلاف فيسبوك",
-        pastebin: "رفع نص",
-        qrgen: "إنشاء QR",
-        translate: "ترجمة النصوص",
-        uid: "معرفة UID",
-        webss: "تصوير موقع",
+    const formatCommands = (cmds) =>
+      cmds
+        .sort()
+        .map(c => {
+          const cmd = allCommands.get(c);
 
-        admin: "المشرفون",
-        help: "عرض القائمة",
-        kick: "طرد عضو",
-        ban: "حظر عضو",
-        restart: "إعادة تشغيل",
-        update: "تحديث البوت"
-      };
-      return d[cmd] || "أمر بوت";
-    };
+          const desc =
+            cmd?.config?.shortDescription ||
+            cmd?.config?.longDescription ||
+            "بدون وصف";
 
-    const groups = {};
+          return `• ${fancyFont(c)} — ${desc}`;
+        })
+        .join("\n");
 
-    for (const [name, cmd] of cmds) {
+    const categories = {};
+
+    for (const [name, cmd] of allCommands) {
       const cat = (cmd.config.category || "others").toLowerCase();
-      if (!groups[cat]) groups[cat] = [];
-      groups[cat].push(name);
+      if (!categories[cat]) categories[cat] = [];
+      categories[cat].push(name);
     }
 
-    const categoriesUI = {
+    let msg =
+`╭─『 🤖 GHOST BOT 』
+│ 📊 ${allCommands.size} أمر
+╰────────────\n`;
+
+    const categoryNames = {
       ai: "𝙰𝙸",
       utility: "𝚄𝚃𝙸𝙻𝙸𝚃𝚈",
-      box: "𝙱𝙾𝚇 𝙲𝙷𝙰𝚃",
+      box: "𝙱𝙾𝚇",
       system: "𝚂𝚈𝚂𝚃𝙴𝙼",
       owner: "𝙾𝚆𝙽𝙴𝚁"
     };
 
-    let msg =
-`╭─『 🤖 GHOST BOT 』
-│ 📊 ${cmds.size} أمر
-╰────────────\n`;
-
-    for (const cat of Object.keys(groups)) {
-      msg += `\n${fancy(categoriesUI[cat] || cat.toUpperCase())}\n`;
-      msg += groups[cat]
-        .sort()
-        .map(c => `• ${fancy(c)} — ${desc(c)}`)
-        .join("\n") + "\n";
+    for (const cat of Object.keys(categories)) {
+      msg += `\n${categoryFont(categoryNames[cat] || cat.toUpperCase())}\n`;
+      msg += formatCommands(categories[cat]) + "\n";
     }
 
-    msg += `\n📌 اكتب: ${prefix}help <اسم الأمر>`;
-
-    const gif = "https://i.imgur.com/KQBcxOV.gif";
-    const dir = path.join(__dirname, "cache");
-    const file = path.join(dir, "help.gif");
-
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir);
-
-    if (!fs.existsSync(file)) {
-      await new Promise((res, rej) => {
-        const f = fs.createWriteStream(file);
-        https.get(gif, r => {
-          r.pipe(f);
-          f.on("finish", () => f.close(res));
-        }).on("error", rej);
-      });
-    }
-
-    return message.reply({
-      body: msg,
-      attachment: fs.createReadStream(file)
-    });
+    msg += `\n📌 اكتب: ${prefix}help <command>`;
+    
+    return message.reply(msg);
   }
 };
