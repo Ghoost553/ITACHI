@@ -3,12 +3,12 @@ const moment = require("moment-timezone");
 module.exports = {
   config: {
     name: "age",
-    aliases: ["myage"],
-    version: "6.0",
-    author: "𝐌𝐨𝐡𝐚ᴍᴍᴀᴅ 𝐀ᴋᴀsʜ",
+    aliases: ["عمري"],
+    version: "7.0",
+    author: "GHOST",
     role: 0,
-    category: "AI",
-    guide: "age <YYYY | DD/MM/YYYY | D Month YYYY | D/Month/YYYY>",
+    category: "أدوات",
+    guide: "{pn} 2007 أو {pn} 01/05/2007",
     countDown: 5
   },
 
@@ -16,7 +16,11 @@ module.exports = {
     try {
       if (!args.length) {
         return api.sendMessage(
-          "⚠️ Uꜱᴇ:\n• age 2007\n• age 01/05/2007\n• age 3 May 2007\n• age 3/may/2007",
+          `⚠️ طريقة الاستخدام:
+
+📌 age 2007
+📌 age 01/05/2007
+📌 age 3 May 2007`,
           event.threadID
         );
       }
@@ -32,12 +36,10 @@ module.exports = {
         nov:11,november:11,dec:12,december:12
       };
 
-      // YYYY
       if (/^\d{4}$/.test(input)) {
         day = 1; month = 1; year = Number(input);
       }
 
-      // DD/MM/YYYY
       else if (/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(input)) {
         const p = input.split("/");
         day = +p[0];
@@ -46,7 +48,6 @@ module.exports = {
         if (year < 100) year += 2000;
       }
 
-      // 3 May 2007
       else if (/^\d{1,2}\s+[a-zA-Z]{3,9}\s+\d{4}$/.test(input)) {
         const p = input.split(" ");
         day = +p[0];
@@ -54,23 +55,15 @@ module.exports = {
         year = +p[2];
       }
 
-      // 3/May/2007
-      else if (/^\d{1,2}\/[a-zA-Z]{3,9}\/\d{4}$/.test(input)) {
-        const p = input.split("/");
-        day = +p[0];
-        month = monthMap[p[1].toLowerCase()];
-        year = +p[2];
-      }
-
       else {
         return api.sendMessage(
-          "❌ Fᴏʀᴍᴀᴛ ভুল\n✔ age 2007\n✔ age 01/05/2007\n✔ age 3 May 2007\n✔ age 3/may/2007",
+          `❌ تنسيق غير صحيح
+
+✔ age 2007
+✔ age 01/05/2007
+✔ age 3 May 2007`,
           event.threadID
         );
-      }
-
-      if (!day || !month || !year) {
-        return api.sendMessage("❌ Dᴀᴛᴇ পাʀsᴇ হʏ নɪ", event.threadID);
       }
 
       const birth = moment.tz(
@@ -80,7 +73,7 @@ module.exports = {
       );
 
       if (!birth.isValid()) {
-        return api.sendMessage("❌ Iɴᴠᴀʟɪᴅ Dᴀᴛᴇ", event.threadID);
+        return api.sendMessage("❌ تاريخ غير صحيح", event.threadID);
       }
 
       const now = moment.tz("Asia/Dhaka");
@@ -95,23 +88,28 @@ module.exports = {
       const totalHours = Math.floor(d.asHours());
 
       const msg = `━━━━━━━━━━━━━━
-🎂 Sᴍᴀʀᴛ Aɢᴇ Cᴏᴜɴᴛ🎂
+🎂 حساب العمر
 ━━━━━━━━━━━━━━
 
-📅 Bɪʀᴛʜᴅᴀʏ: ${String(day).padStart(2,"0")}/${String(month).padStart(2,"0")}/${year}
-🕒 Aɢᴇ: ${y} Yᴇᴀʀs ${m} Mᴏɴᴛʜs ${dy} Dᴀʏs
+📅 تاريخ الميلاد: ${String(day).padStart(2,"0")}/${String(month).padStart(2,"0")}/${year}
 
-📌 Tᴏᴛᴀʟ:
-➤ ${totalMonths} Mᴏɴᴛʜs
-➤ ${totalDays} Dᴀʏs
-➤ ${totalHours} Hᴏᴜʀs
+🕒 العمر:
+➤ ${y} سنة
+➤ ${m} شهر
+➤ ${dy} يوم
+
+📊 التفاصيل:
+➤ ${totalMonths} شهر
+➤ ${totalDays} يوم
+➤ ${totalHours} ساعة
+
 ━━━━━━━━━━━━━━`;
 
       return api.sendMessage(msg, event.threadID);
 
     } catch (e) {
       console.error(e);
-      return api.sendMessage("❌ Eʀʀᴏʀ", event.threadID);
+      return api.sendMessage("❌ حدث خطأ", event.threadID);
     }
   }
 };
