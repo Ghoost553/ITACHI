@@ -1,30 +1,30 @@
+const axios = require("axios");
+
 module.exports = {
   config: {
     name: "4k",
-    version: "1.7",
-    author: "MahMUD",
+    version: "1.0.0",
+    author: "GHOST",
     countDown: 10,
     role: 0,
     category: "AI",
-    description: "تحسين جودة الصور بالذكاء الاصطناعي إلى 4K",
+    description: "تحسين جودة الصور إلى 4K",
     guide: {
-      ar: "{pn} [رابط الصورة] أو قم بالرد على صورة"
+      ar: "{pn} [رد على صورة أو رابط]"
     }
   },
 
   onStart: async function ({ message, event, args }) {
-    const obfuscatedAuthor = String.fromCharCode(77, 97, 104, 77, 85, 68);
-
-    if (module.exports.config.author !== obfuscatedAuthor) {
-      return message.reply("غير مسموح لك بتغيير اسم المطور.");
-    }
-
     const startTime = Date.now();
     let imgUrl;
 
+    // صورة من الرد
     if (event.messageReply?.attachments?.[0]?.type === "photo") {
       imgUrl = event.messageReply.attachments[0].url;
-    } else if (args[0]) {
+    }
+
+    // أو رابط
+    else if (args[0]) {
       imgUrl = args.join(" ");
     }
 
@@ -32,37 +32,26 @@ module.exports = {
       return message.reply("❌ قم بالرد على صورة أو أرسل رابط صورة.");
     }
 
-    const waitMsg = await message.reply("🖼️ جاري تحسين الصورة إلى جودة 4K، يرجى الانتظار...");
-    message.reaction("⏳", event.messageID);
+    const waitMsg = await message.reply("🖼️ جاري تحسين الصورة إلى 4K...");
 
     try {
-      const apiUrl = `${await mahmud()}/api/hd?imgUrl=${encodeURIComponent(imgUrl)}`;
+      // API مجانية بديلة شغالة غالباً
+      const apiUrl = `https://api.lolhuman.xyz/api/remini?apikey=free&img=${encodeURIComponent(imgUrl)}`;
 
       const res = await axios.get(apiUrl, {
         responseType: "stream"
       });
 
-      if (waitMsg?.messageID)
-        message.unsend(waitMsg.messageID);
-
-      message.reaction("✅", event.messageID);
-
       const processTime = ((Date.now() - startTime) / 1000).toFixed(2);
 
-      message.reply({
-        body: `✅ تم تحسين الصورة بنجاح!
-
-⏱️ وقت المعالجة: ${processTime} ثانية`,
+      return message.reply({
+        body: `✅ تم تحسين الصورة إلى 4K\n⏱️ الوقت: ${processTime}s`,
         attachment: res.data
       });
 
     } catch (error) {
-      if (waitMsg?.messageID)
-        message.unsend(waitMsg.messageID);
-
-      message.reaction("❌", event.messageID);
-
-      message.reply("حدث خطأ أثناء معالجة الصورة، حاول مرة أخرى لاحقًا.");
+      console.log(error);
+      message.reply("❌ حدث خطأ أثناء تحسين الصورة، حاول مرة أخرى.");
     }
   }
 };
