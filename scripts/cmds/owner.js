@@ -5,38 +5,45 @@ const path = require("path");
 module.exports = {
   config: {
     name: "owner",
-    version: "1.3.0",
-    author: "Mᴏʜᴀᴍᴍᴀᴅ Aᴋᴀsʜ",
+    version: "3.0.0",
+    author: "GHOST",
     role: 0,
-    shortDescription: "Owner information with image",
-    category: "Information",
+    shortDescription: "معلومات المالك VIP",
+    category: "information",
     guide: {
-      en: "owner"
+      ar: "owner"
     }
   },
 
   onStart: async function ({ api, event }) {
-    const ownerText = 
-`╭─ 👑 Oᴡɴᴇʀ Iɴғᴏ 👑 ─╮
-│ 👤 Nᴀᴍᴇ       : Mᴏʜᴀᴍᴍᴀᴅ Aᴋᴀsʜ
-│ 🧸 Nɪᴄᴋ       : Aᴋᴀsʜ
-│ 🎂 Aɢᴇ        : 18+
-│ 💘 Rᴇʟᴀᴛɪᴏɴ : Sɪɴɢʟᴇ
-│ 🎓 Pʀᴏғᴇssɪᴏɴ : Sᴛᴜᴅᴇɴᴛ
-│ 📚 Eᴅᴜᴄᴀᴛɪᴏɴ : Iɴᴛᴇʀ 2ɴᴅ Yᴇᴀʀ
-│ 🏡 Lᴏᴄᴀᴛɪᴏɴ : 𝐃𝐡𝐚𝐤𝐚 - 𝐆𝐚𝐳𝐢𝐩𝐮𝐫
-├─ 🔗 Cᴏɴᴛᴀᴄᴛ ─╮
-│ 📘 Facebook  : fb.com/akashx404 
-│ 💬 Messenger: m.me/akashx404 
-│ 📞 WhatsApp  : wa.me/01933165880
-╰────────────────╯`;
+
+    const ownerText =
+`━━━━━━━━━━━━━━
+👑  𝐎𝐖𝐍𝐄𝐑 𝐕𝐈𝐏 𝐂𝐀𝐑𝐃 👑
+━━━━━━━━━━━━━━
+
+👤 الاسم   : GHOST
+🎂 العمر   : 19 سنة
+💘 الحالة  : عازب
+🎓 المهنة  : عسكري
+📚 الدراسة : علوم وتكنولوجيا وبرمجة
+🏡 الموقع  : سيڨ، ولاية معسكر
+
+━━━━━━━━━━━━━━
+🔗 تواصل مع المالك:
+📘 فيسبوك : facebook.com/61588788488487
+📞 واتساب : +213 784 317 810
+
+━━━━━━━━━━━━━━
+⚡ 𝐆𝐇𝐎𝐒𝐓 𝐁𝐎𝐓 ⚡
+━━━━━━━━━━━━━━`;
 
     const cacheDir = path.join(__dirname, "cache");
     const imgPath = path.join(cacheDir, "owner.jpg");
 
     if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir);
 
-    const imgLink = "https://i.imgur.com/1G4ZhU7.jpeg";
+    const imgLink = "https://i.ibb.co/TMHZmqcV/65cd7dc0a3ed.jpg";
 
     const send = () => {
       api.sendMessage(
