@@ -6,145 +6,146 @@ module.exports = {
   config: {
     name: "help",
     aliases: ["menu", "commands"],
-    version: "7.0",
+    version: "7.1",
     author: "GHOST",
     shortDescription: "عرض جميع الأوامر",
-    longDescription: "عرض قائمة الأوامر بشكل منظم",
+    longDescription: "عرض قائمة الأوامر بشكل منظم واحترافي",
     category: "system",
     guide: "{pn}help [command]"
   },
 
-  onStart: async function ({ message, args, prefix }) {
+  onStart: async function ({ message, args, prefix, api }) {
     const allCommands = global.GoatBot.commands;
 
-    // 🔥 ترجمة شاملة للأوامر
+    // 🔥 ترجمة شاملة
     const tr = {
-      // AI
-      "4k": "تحسين الصور بدقة 4K",
-      "liner": "مساعد ذكاء اصطناعي",
-      "prompt": "إنشاء برومبت",
-      "remini": "تحسين الصور",
-      "weather": "الطقس",
-      "webinfo": "معلومات موقع",
-      "youai": "دردشة ذكاء اصطناعي",
+      4k: "تحسين الصور بدقة 4K",
+      liner: "مساعد ذكاء اصطناعي",
+      prompt: "إنشاء برومبت",
+      remini: "تحسين الصور",
+      weather: "الطقس",
+      webinfo: "معلومات موقع",
+      youai: "دردشة ذكاء اصطناعي",
 
-      // tools
-      "accept": "قبول الطلبات",
-      "pastebin": "رفع نص",
-      "qrgen": "إنشاء QR",
-      "translate": "ترجمة",
-      "uid": "معرفة UID",
-      "webss": "تصوير موقع",
+      accept: "قبول الطلبات",
+      pastebin: "رفع نص",
+      qrgen: "إنشاء QR",
+      translate: "ترجمة",
+      uid: "معرفة UID",
+      webss: "تصوير موقع",
 
-      // group
-      "adduser": "إضافة عضو",
-      "admin": "المشرفون",
-      "all": "منشن الجميع",
-      "allbox": "كل المجموعات",
-      "ban": "حظر عضو",
-      "boxinfo": "معلومات المجموعة",
-      "busy": "وضع الانشغال",
-      "count": "عدد الأعضاء",
-      "emoji": "تغيير الإيموجي",
-      "lock": "قفل المجموعة",
-      "onlyadminbox": "للمشرفين فقط",
-      "rules": "قوانين المجموعة",
-      "warn": "إنذار",
+      adduser: "إضافة عضو",
+      admin: "المشرفون",
+      all: "منشن الجميع",
+      allbox: "كل المجموعات",
+      boxinfo: "معلومات المجموعة",
+      lock: "قفل المجموعة",
+      warn: "إنذار",
+      kick: "طرد عضو",
+      kickall: "طرد الجميع",
 
-      // system
-      "help": "المساعدة",
-      "restart": "إعادة تشغيل",
-      "update": "تحديث البوت",
-      "eval": "تنفيذ كود",
-      "kick": "طرد عضو",
-      "kickall": "طرد الجميع",
-      "setlang": "تغيير اللغة",
-      "backupdata": "نسخ احتياطي",
-      "clear": "مسح البيانات",
+      help: "المساعدة",
+      restart: "إعادة تشغيل",
+      update: "تحديث البوت",
+      eval: "تنفيذ كود",
+      backupdata: "نسخ احتياطي",
+      clear: "مسح البيانات",
+      setlang: "تغيير اللغة",
 
-      // fun
-      "kiss": "قبلة",
-      "pair": "تزاوج عشوائي",
-      "jail": "سجن",
-      "hack": "اختراق وهمي",
-      "trash": "قمامة",
+      kiss: "قبلة",
+      pair: "تزاوج عشوائي",
+      jail: "سجن",
+      hack: "اختراق وهمي",
+      trash: "قمامة",
 
-      // media
-      "tiktok": "تحميل تيك توك",
-      "download": "تحميل",
-      "say": "تحويل نص لصوت",
-      "sing": "غناء",
+      tiktok: "تحميل تيك توك",
+      download: "تحميل",
+      say: "تحويل نص لصوت",
+      sing: "غناء",
 
-      // economy
-      "daily": "مكافأة يومية",
-      "bet": "مراهنة",
-      "slot": "لعبة حظ",
-      "leaderboard": "ترتيب اللاعبين"
+      daily: "مكافأة يومية",
+      bet: "مراهنة",
+      slot: "لعبة حظ",
+      leaderboard: "ترتيب اللاعبين"
     };
 
     const smartTranslate = (cmd) => {
-      if (tr[cmd]) return tr[cmd];
-      return cmd
-        .replace(/_/g, " ")
-        .replace(/-/g, " ");
+      return tr[cmd] || cmd.replace(/[_-]/g, " ");
     };
+
+    // 📌 تنظيم الكاتيجوري بشكل صحيح
+    const normalizeCat = {
+      "ai-image": "الذكاء الاصطناعي",
+      ai: "الذكاء الاصطناعي",
+      utility: "الأدوات",
+      tools: "الأدوات",
+      group: "المجموعة",
+      box: "المجموعة",
+      system: "النظام",
+      owner: "المالك",
+      fun: "الترفيه",
+      entertainment: "الترفيه",
+      media: "الوسائط",
+      economy: "الاقتصاد",
+      game: "الألعاب",
+      anime: "أنمي",
+      info: "معلومات",
+      music: "الموسيقى",
+      other: "أخرى"
+    };
+
+    const categories = {};
+
+    for (const [name, cmd] of allCommands) {
+      let cat = (cmd.config.category || "other").toLowerCase();
+      cat = normalizeCat[cat] || cat;
+
+      if (!categories[cat]) categories[cat] = [];
+      categories[cat].push(name);
+    }
 
     const formatCommands = (cmds) =>
       cmds
         .sort()
         .map(c => {
           const desc = smartTranslate(c);
-          return `• ${c}${desc ? " — " + desc : ""}`;
+          return `• ${c.padEnd(15)} → ${desc}`;
         })
         .join("\n");
-
-    const categories = {};
-    for (const [name, cmd] of allCommands) {
-      const cat = (cmd.config.category || "others").toLowerCase();
-      if (!categories[cat]) categories[cat] = [];
-      categories[cat].push(name);
-    }
 
     let msg =
 `╭─『 🤖 GHOST BOT 』
 │ 📊 ${allCommands.size} أمر
 ╰────────────\n`;
 
-    const categoryNames = {
-      ai: "الذكاء الاصطناعي",
-      utility: "الأدوات",
-      box: "المجموعة",
-      system: "النظام",
-      owner: "المالك",
-      fun: "الترفيه",
-      media: "الوسائط",
-      economy: "الاقتصاد"
-    };
-
     for (const cat of Object.keys(categories)) {
-      msg += `\n${categoryNames[cat] || cat}\n`;
+      msg += `\n📁 ${cat}\n`;
       msg += formatCommands(categories[cat]) + "\n";
     }
 
-    msg += `\nاكتب: ${prefix}help <اسم الأمر>`;
+    msg += `\n💡 اكتب: ${prefix}help <اسم الأمر>`;
 
-    const gifURLs = [
-      "https://i.imgur.com/Xw6JTfn.gif",
-      "https://i.imgur.com/mW0yjZb.gif",
-      "https://i.imgur.com/KQBcxOV.gif"
-    ];
-
-    const randomGifURL = gifURLs[Math.floor(Math.random() * gifURLs.length)];
-    const gifFolder = path.join(__dirname, "cache");
-
-    if (!fs.existsSync(gifFolder)) fs.mkdirSync(gifFolder, { recursive: true });
-
-    const gifName = path.basename(randomGifURL);
-    const gifPath = path.join(gifFolder, gifName);
+    // 🎯 GIF واحد ثابت (بدون تحميل كل مرة)
+    const gifPath = path.join(__dirname, "cache", "menu.gif");
 
     try {
+      if (!fs.existsSync(path.dirname(gifPath))) {
+        fs.mkdirSync(path.dirname(gifPath), { recursive: true });
+      }
+
+      // تحميل مرة واحدة فقط
       if (!fs.existsSync(gifPath)) {
-        await downloadGif(randomGifURL, gifPath);
+        const url = "https://i.imgur.com/Xw6JTfn.gif";
+
+        await new Promise((resolve, reject) => {
+          const file = fs.createWriteStream(gifPath);
+
+          https.get(url, (res) => {
+            if (res.statusCode !== 200) return reject();
+            res.pipe(file);
+            file.on("finish", () => file.close(resolve));
+          }).on("error", reject);
+        });
       }
 
       return message.reply({
@@ -157,22 +158,3 @@ module.exports = {
     }
   }
 };
-
-function downloadGif(url, dest) {
-  return new Promise((resolve, reject) => {
-    const file = fs.createWriteStream(dest);
-
-    https.get(url, (res) => {
-      if (res.statusCode !== 200) {
-        fs.unlink(dest, () => {});
-        return reject();
-      }
-
-      res.pipe(file);
-      file.on("finish", () => file.close(resolve));
-    }).on("error", (err) => {
-      fs.unlink(dest, () => {});
-      reject(err);
-    });
-  });
-      }
