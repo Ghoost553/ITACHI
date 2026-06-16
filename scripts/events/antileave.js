@@ -4,7 +4,7 @@ module.exports = {
   config: {
     name: "antileave",
     version: "2.5",
-    author: "EryXenX",
+    author: "GHOST",
     category: "events"
   },
 
@@ -29,10 +29,22 @@ module.exports = {
       const boldName = userName.split("").map(c => boldMap[c] || c).join("");
 
       const form = {
-        body: `😹 ${boldName} tried to leave...  
+        body: `╭━━━━━━━━━━━━━━━━━━━━━━╮
+┃ 🛡️ 𝗔𝗡𝗧𝗜 𝗟𝗘𝗔𝗩𝗘 𝗣𝗥𝗢𝗧𝗘𝗖𝗧𝗜𝗢𝗡
+╰━━━━━━━━━━━━━━━━━━━━━━╯
 
-🚫 Not allowed here!  
-🔄 Added back 😇`
+👤 ${boldName}
+
+🚨 تم رصد محاولة مغادرة النظام
+━━━━━━━━━━━━━━━━━━━━━━
+🔴 الحالة: مرفوضة
+🔁 الإجراء: إعادة إدخال تلقائي
+
+⚡ لا يوجد خروج بدون إذن
+🧠 النظام: Malinia Security Core
+
+╰━━━━━━━━━━━━━━━━━━━━━━╯
+💠 𝐌𝐀𝐋𝐈𝐍𝐈𝐀 𝐁𝐎𝐓`
       };
 
       try {
