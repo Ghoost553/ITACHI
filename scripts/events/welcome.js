@@ -9,17 +9,44 @@ module.exports = {
   config: {
     name: "welcome",
     version: "8.0",
-    author: "EryXenX",
+    author: "GHOST",
     category: "events"
   },
 
   langs: {
-    en: {
-      defaultWelcomeMessage: "𝗪𝗲𝗹𝗰𝗼𝗺𝗲 {userName} 🎉\n┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄\n✦ Glad to have you here! Enjoy your stay and make great memories 🌸",
-      botAddedMessage:
-        "━━━━━━━━━━━━━━━━━━━\n🤖 ᴛʜᴀɴᴋ ʏᴏᴜ ғᴏʀ ᴀᴅᴅɪɴɢ ᴍᴇ ᴛᴏ ᴛʜᴇ ɢʀᴏᴜᴘ! 💖\n\n⚙️ ʙᴏᴛ ᴘʀᴇꜰɪx : /\n📜 ᴛʏᴘᴇ /help ᴛᴏ sᴇᴇ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅs\n\n✨ ʟᴇᴛ's ᴍᴀᴋᴇ ᴛʜɪs ɢʀᴏᴜᴘ ᴇᴠᴇɴ ᴍᴏʀᴇ ꜰᴜɴ ᴛᴏɢᴇᴛʜᴇʀ! 😄\n━━━━━━━━━━━━━━━━━━━"
-    }
-  },
+en: {
+defaultWelcomeMessage:
+`╭━━━━━━━━━━━━━━━━━━╮
+┃ 🌸 أهلاً وسهلاً {userName}
+╰━━━━━━━━━━━━━━━━━━╯
+
+✨ مرحباً بك في 「 {threadName} 」
+
+👥 أنت العضو رقم {memberCount}
+🎖️ تمت إضافتك بواسطة {inviterName}
+
+💖 نتمنى لك أوقاتاً ممتعة معنا
+📜 يرجى احترام القوانين وأعضاء المجموعة
+
+🌷 نورت المجموعة يا صديق 🌷`,
+
+botAddedMessage:
+
+`╭━━━━━━━━━━━━━━━━━━╮
+┃ 🤖 مـالـيـنـيـا
+╰━━━━━━━━━━━━━━━━━━╯
+
+💖 شكراً لإضافتي إلى هذه المجموعة
+
+⚙️ البريفكس الخاص بي: /
+📜 اكتب /help لرؤية جميع الأوامر
+
+✨ أستطيع المساعدة، الإدارة،
+الترفيه، الزخرفة، والألعاب
+
+🌸 أتمنى أن أكون عند حسن ظنكم 🌸`
+}
+},
 
   onStart: async ({ threadsData, message, event, api, usersData, getLang }) => {
     if (event.logMessageType !== "log:subscribe") return;
@@ -537,7 +564,7 @@ async function createWelcomeCard({
     pGrad.addColorStop(1, 'rgba(46,204,113,1)');
     ctx.fillStyle = pGrad;
     ctx.shadowColor = 'rgba(100,200,255,0.55)'; ctx.shadowBlur = 16;
-    ctx.fillText('Powered By EryXenX', cx, cy + 8);
+    ctx.fillText('✦ MALINIA BOT • HOSTED BY GHOST ✦', cx, cy + 8);
     ctx.restore();
   }
 
@@ -550,4 +577,4 @@ async function createWelcomeCard({
   const tempPath = path.join(__dirname, `temp_welcome_${Date.now()}.png`);
   await fs.writeFile(tempPath, canvas.toBuffer('image/png'));
   return tempPath;
-        }
+    }
