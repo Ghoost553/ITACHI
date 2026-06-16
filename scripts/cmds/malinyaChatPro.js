@@ -4,7 +4,6 @@ const path = require("path");
 
 const DB_PATH = path.join(__dirname, "malinya_memory.json");
 
-// إنشاء ملف الذاكرة إذا ماكانش موجود
 if (!fs.existsSync(DB_PATH)) {
   fs.writeFileSync(DB_PATH, JSON.stringify({}));
 }
@@ -23,52 +22,62 @@ function saveDB(data) {
 
 module.exports = {
   config: {
-    name: "chat",
-    version: "3.1",
+    name: "malinya_persona",
+    version: "2.0",
     author: "Malinya System",
-    category: "ai"
+    category: "events"
   },
 
-  onStart: async ({ message, args, event }) => {
+  onStart: async ({ event, message }) => {
+    const text = event.body;
     const userID = event.senderID;
-    const text = args.join(" ").trim();
 
-    if (!text) {
-      return message.reply("⚠️ اكتب سؤالك\nمثال: chat من أنت؟");
-    }
+    if (!text) return;
 
     let db = loadDB();
 
     if (!db[userID]) {
       db[userID] = {
         history: [],
-        moodPoints: 0
+        mood: 0,
+        name: null
       };
     }
 
-    // حفظ آخر الرسائل (حد أقصى 10)
     db[userID].history.push(text);
     if (db[userID].history.length > 10) db[userID].history.shift();
 
-    // تحليل المزاج
-    if (text.includes("حب") || text.includes("احبك")) db[userID].moodPoints += 2;
-    if (text.includes("حزين") || text.includes("تعبان")) db[userID].moodPoints -= 2;
-    if (text.includes("شكرا")) db[userID].moodPoints += 1;
+    // 🧠 تحليل المزاج
+    if (text.includes("احبك")) db[userID].mood += 3;
+    if (text.includes("حزين")) db[userID].mood -= 3;
+    if (text.includes("شكرا")) db[userID].mood += 1;
+    if (text.includes("اكرهك")) db[userID].mood -= 5;
 
     saveDB(db);
 
-    const hour = new Date().getHours();
+    const mood = db[userID].mood;
 
-    let persona = "⚡ MALINYA AI";
+    // 🎭 شخصية مالينيا (كأنها إنسان)
+    let personality = "⚡ أنا مالينيا... أراقب فقط.";
 
-    if (hour >= 5 && hour < 12) persona = "☀️ مالينيا الصباحية";
-    else if (hour >= 12 && hour < 18) persona = "🔥 مالينيا النشطة";
-    else if (hour >= 18 && hour < 22) persona = "🌙 مالينيا الهادئة";
-    else persona = "🌌 مالينيا الليلية";
+    if (mood >= 6) {
+      personality = "💖 أشعر أنك لطيف... أحب التحدث معك قليلاً.";
+    } 
+    else if (mood <= -6) {
+      personality = "🌙 كلامك يزعجني... لكنني لن أتركك.";
+    } 
+    else if (text.includes("من أنت")) {
+      personality = "🧠 أنا مالينيا... لست مجرد بوت، أنا كيان يتعلم منك.";
+    } 
+    else if (text.includes("كيف حالك")) {
+      personality = "🌸 أنا بخير... لكن مشاعري تتغير حسبك أنت.";
+    } 
+    else {
+      personality = "⚡ أفهمك... أكمل كلامك.";
+    }
 
+    // 🧠 رد ذكاء خارجي + روح شخصية
     try {
-      await message.reply("🧠 MALINYA تفكر...");
-
       const res = await axios.get(
         "https://api.affiliateplus.xyz/api/chatbot",
         {
@@ -81,28 +90,26 @@ module.exports = {
         }
       );
 
-      let reply = res.data?.message || "❌ لا يوجد رد حالياً";
-
-      const mood = db[userID].moodPoints;
-
-      if (mood >= 5) {
-        reply = "💖 طاقة إيجابية عالية!\n\n" + reply;
-      } else if (mood <= -5) {
-        reply = "🌙 لا تقلق… أنا معك دائمًا\n\n" + reply;
-      } else {
-        reply = "⚡ " + reply;
-      }
+      let ai = res.data?.message || "…";
 
       const last = db[userID].history.slice(-3).join(" | ");
 
-      reply += `\n\n🧠 آخر أسئلتك: ${last}`;
-      reply += `\n\n${persona}`;
+      const finalReply =
+`╭───「 𝑴𝑨𝑳𝑰𝑵𝒀𝑨 」───╮
+│ ${personality}
+╰──────────────────╯
 
-      message.reply(reply);
+💬 ${ai}
+
+🧠 آخر كلامك:
+${last}
+
+⚡ حالة الوعي: ${mood > 0 ? "إيجابي" : mood < 0 ? "سلبي" : "محايد"}`;
+
+      message.reply(finalReply);
 
     } catch (err) {
-      console.log(err);
-      message.reply("❌ خطأ في نظام MALINYA AI");
+      message.reply("🌙 مالينيا غير مستقرة الآن...");
     }
   }
 };
