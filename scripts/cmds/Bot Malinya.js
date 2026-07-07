@@ -44,7 +44,7 @@ module.exports = {
         const { threadID, messageID } = event;
 
         // ⚠️ ضع مفتاح الـ API الخاص بك من Google AI Studio هنا بين القوسين
-        const apiKey = "AQ.Ab8RN6JQl-Ft6A-IGb5Zyf1UavTk3qQfMRn42ElawnGkpgPJsw";
+        const apiKey = "AIzaSyCpZUpQwthrWj-1pLMPh8D0ET_IMbnjzlQ";
 
         // توجيه شخصية مالينيا
         const systemInstruction = "أنتِ ذكاء اصطناعي واسمكِ 'مالينيا'. تجيبين على الأسئلة بذكاء، لباقة، وودودية تامة باللغة العربية. ساعدي المستخدم بكل ما يحتاجه.";
