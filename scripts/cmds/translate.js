@@ -4,14 +4,15 @@ const defaultEmojiTranslate = "🌐";
 module.exports = {
 	config: {
 		name: "translate",
-		aliases: ["trans"],
+		aliases: ["trans", "ترجم", "ترجمة"],
 		version: "1.5",
 		author: "NTKhang",
 		countDown: 5,
 		role: 0,
 		description: {
 			vi: "Dịch văn bản sang ngôn ngữ mong muốn",
-			en: "Translate text to the desired language"
+			en: "Translate text to the desired language",
+			ar: "ترجمة النصوص إلى اللغة التي تختارها"
 		},
 		category: "utility",
 		guide: {
@@ -28,7 +29,16 @@ module.exports = {
 				+ "\n   Example:"
 				+ "\n    {pn} hello -> vi"
 				+ "\n   {pn} -r [on | off]: Turn on or off the automatic translation mode when someone reacts to the message"
-				+ "\n   {pn} -r set <emoji>: Set the emoji to translate the message in your chat group"
+				+ "\n   {pn} -r set <emoji>: Set the emoji to translate the message in your chat group",
+			ar: "   {pn} <النص>: لترجمة النص إلى لغة المجموعة الحالية أو لغة البوت الافتراضية."
+				+ "\n   {pn} <النص> -> <رمز اللغة>: لترجمة النص إلى لغة معينة (مثال: ar, en, fr)."
+				+ "\n   💡 يمكنك أيضاً الرد (Reply) على أي رسالة لترجمة محتواها مباشرة."
+				+ "\n\n   📋 الأوامر الإضافية:"
+				+ "\n   {pn} -r [on | off]: تفعيل أو تعطيل ميزة الترجمة التلقائية عند التفاعل بالإيموجي."
+				+ "\n   {pn} -r set <إيموجي>: تخصيص إيموجي معين لتتم الترجمة عند التفاعل به."
+				+ "\n\n   ⭐ أمثلة:"
+				+ "\n   {pn} hello -> ar"
+				+ "\n   {pn} -r on"
 		}
 	},
 
@@ -40,7 +50,6 @@ module.exports = {
 			turnOffTransWhenReaction: "✅ Đã tắt tính năng dịch tin nhắn khi thả cảm xúc",
 			inputEmoji: "🌀 Hãy thả cảm xúc vào tin nhắn này để đặt emoji đó làm emoji dịch tin nhắn",
 			emojiSet: "✅ Đã đặt emoji dịch tin nhắn là %1"
-
 		},
 		en: {
 			translateTo: "🌐 Translate from %1 to %2",
@@ -49,6 +58,13 @@ module.exports = {
 			turnOffTransWhenReaction: "✅ Turn off translate message when reaction",
 			inputEmoji: "🌀 Please react to this message to set that emoji as emoji to translate message",
 			emojiSet: "✅ Emoji to translate message is set to %1"
+		},
+		ar: {
+			invalidArgument: "╭━━━━━━━━━━━━━━━━━━━━╮\n│      🌍 𝑴𝒂𝒍𝒊𝒏𝒚𝒂 𝑻𝒓𝒂𝒏𝒔𝒍𝒂𝒕𝒆\n╰━━━━━━━━━━━━━━━━━━━━╯\n\n❌ عذراً، الخيار غير صحيح!\nيرجى استخدام [ on ] للتفعيل أو [ off ] للتعطيل.",
+			turnOnTransWhenReaction: `╭━━━━━━━━━━━━━━━━━━━━╮\n│      🌍 𝑴𝒂𝒍𝒊𝒏𝒚𝒂 𝑻𝒓𝒂𝒏𝒔𝒍𝒂𝒕𝒆\n╰━━━━━━━━━━━━━━━━━━━━╯\n\n✅ تم تفعيل ميزة الترجمة عبر التفاعل بنجاح!\n💡 جرب وضع التفاعل "${defaultEmojiTranslate}" على أي رسالة لترجمتها فوراً.\n⚠️ ملاحظة: لا تشمل رسائل البوت وتعمل للرسائل الجديدة فقط.`,
+			turnOffTransWhenReaction: "╭━━━━━━━━━━━━━━━━━━━━╮\n│      🌍 𝑴𝒂𝒍𝒊𝒏𝒚𝒂 𝑻𝒓𝒂𝒏𝒔𝒍𝒂𝒕𝒆\n╰━━━━━━━━━━━━━━━━━━━━╯\n\n🛑 تم تعطيل ميزة الترجمة عبر التفاعل بنجاح.",
+			inputEmoji: "╭━━━━━━━━━━━━━━━━━━━━╮\n│      🌍 𝑴𝒂𝒍𝒊𝒏𝒚𝒂 𝑻𝒓𝒂𝒏𝒔𝒍𝒂𝒕𝒆\n╰━━━━━━━━━━━━━━━━━━━━╯\n\n🌀 من فضلك ضع تفاعل (إيموجي) على هذه الرسالة لتعيينه كإيموجي مخصص للترجمة.",
+			emojiSet: "╭━━━━━━━━━━━━━━━━━━━━╮\n│      🌍 𝑴𝒂𝒍𝒊𝒏𝒚𝒂 𝑻𝒓𝒂𝒏𝒔𝒍𝒂𝒕𝒆\n╰━━━━━━━━━━━━━━━━━━━━╯\n\n✅ تم بنجاح تعيين إيموجي الترجمة ليكون: [ %1 ]"
 		}
 	},
 
@@ -152,5 +168,23 @@ async function translate(text, langCode) {
 
 async function translateAndSendMessage(content, langCodeTrans, message, getLang) {
 	const { text, lang } = await translate(content.trim(), langCodeTrans.trim());
-	return message.reply(`${text}\n\n${getLang("translateTo", lang, langCodeTrans)}`);
+	
+	const formattedResponse = `╭━━━━━━━━━━━━━━━━━━━━╮
+│      🌍 𝑴𝒂𝒍𝒊𝒏𝒚𝒂 𝑻𝒓𝒂𝒏𝒔𝒍𝒂𝒕𝒆
+╰━━━━━━━━━━━━━━━━━━━━╯
+
+📝 **النص المترجم:**
+━━━━━━━━━━━━━━━━━━
+${text}
+━━━━━━━━━━━━━━━━━━
+
+🌐 **اللغة الأصلية:** [ ${lang} ]
+🎯 **اللغة المطلوبة:** [ ${langCodeTrans} ]
+
+╭━━━━━━━━━━━━━━━━━━━━╮
+│ 🤖 Bot Malinya
+│ ⚡ ترجمة سريعة ودقيقة
+╰━━━━━━━━━━━━━━━━━━━━╯`;
+
+	return message.reply(formattedResponse);
 }
