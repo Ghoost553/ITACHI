@@ -1,7 +1,7 @@
-Module.exports = {
+module.exports = {
     config: {
         name: "طرد",
-        version: "1.0.3",
+        version: "1.0.5",
         author: "GHOST",
         countDown: 5,
         role: 0, 
@@ -9,11 +9,11 @@ Module.exports = {
         longDescription: "طرد أي عضو عن طريق المنشن أو الرد على رسالته بأمر من GHOST أو صديقه NABIL",
         category: "box chat",
         guide: {
-            ar: "{p}طرد @الاسم أو بالرد على رسالته"
+            ar: "/طرد @الاسم أو بالرد على رسالته"
         }
     },
 
-    onStart: async function ({ message, event, args, threadsData, usersData }) {
+    onStart: async function ({ message, event, args, threadsData, usersData, api }) {
         const { threadID, messageID, senderID, mentions } = event;
 
         // 🆔 المعرفات المصرح لها باستخدام الأمر
@@ -52,13 +52,17 @@ Module.exports = {
         try {
             // جلب اسم الشخص المطرود
             const targetInfo = await usersData.get(targetID);
-            const targetName = targetInfo.name || "العضو";
+            const targetName = targetInfo ? targetInfo.name : "العضو";
 
             // مسح رسالة الأمر لتبدو الدردشة نظيفة ومنظمة
-            await message.unsend(messageID); 
+            try {
+                await message.unsend(messageID);
+            } catch (e) {
+                // تجنب توقف الكود إذا فشل حذف الرسالة الأصلية
+            }
             
             // طرد العضو من المجموعة
-            await global.api.removeUserFromGroup(targetID, threadID);
+            await api.removeUserFromGroup(targetID, threadID);
             
             // تحديد نص الرد بناءً على من قام بالطرد
             let replyMessage = "";
@@ -71,6 +75,7 @@ Module.exports = {
             // رد بوت مالينيا المزخرف النهائي
             return message.send(`╭━━━ — — — ⚡ — — — ━━━╮\n  𓆩 𝐌𝐀𝐋𝐈𝐍𝐘𝐀 𓆪\n\n${replyMessage}\n\n╰━━━ — — — ⚡ — — — ━━━╯`);
         } catch (error) {
+            console.error(error);
             return message.reply("❌ ⌊ فَشِل الطّرد، تأكّد من تَرقيَتِي إلَى مُشرِف أوّلاً ! ⌉");
         }
     }
