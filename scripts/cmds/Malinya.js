@@ -3,16 +3,19 @@ const axios = require('axios');
 module.exports = {
     config: {
         name: "malinya",
-        version: "3.0.0",
-        author: "Gemini",
+        version: "4.0.0",
+        author: "GHOST & Gemini",
         countDown: 2,
         role: 0,
-        description: "مالينيا بشخصية قوية وولاء تام للمطور GHOST",
+        shortDescription: { en: "AI Chat Malinya", vi: "AI Chat Malinya" },
+        longDescription: { en: "مالينيا بشخصية قوية وولاء تام للمطور GHOST", vi: "مالينيا" },
         category: "chat",
-        guide: "نادِ 'مالينيا' وتحدث معها"
+        guide: { en: "نادِ 'مالينيا' وتحدث معها", vi: "نادِ 'مالينيا'" },
+        envConfig: {}
     },
 
-    onChat: async function ({ api, event }) {
+    // هذا الجزء هو السر! يشتغل كحدث مستمر يراقب كل رسالة تدخل للجروب
+    onEvent: async function ({ api, event }) {
         const { threadID, messageID, body, senderID } = event;
         if (!body) return;
 
@@ -20,19 +23,18 @@ module.exports = {
         const botName1 = "bot malinya";
         const botName2 = "مالينيا";
 
+        // التحقق من أن الكلمة موجودة وأن المرسل ليس البوت نفسه
         if ((messageText.includes(botName1) || messageText.includes(botName2)) && senderID !== api.getCurrentUserID()) {
             
             let userMessage = body.replace(new RegExp(botName1, 'gi'), '').replace(new RegExp(botName2, 'g'), '').trim();
             if (!userMessage) userMessage = "أهلاً"; 
 
-            // التحقق إذا كان المتحدث هو المطور GHOST
-            // ملاحظة: يمكنك استبدال "GHOST" باسم حسابك أو وضع شرط الـ ID الخاص بك لضمان الدقة
-            const isDeveloper = (senderID == global.config.ADMINBOT[0]); // يتعرف على الآدمين الأول للبوت كـ GHOST
+            // فحص إذا كنت أنت المطور GHOST
+            const isDeveloper = (global.config && global.config.ADMINBOT && global.config.ADMINBOT.includes(senderID)) || (senderID == global.config.ADMINBOT[0]);
 
             try {
-                // تلقين الشخصية الجديدة لمالينيا
                 const identity = `أنتِ "مالينيا" (Malinya)، بوت ذكي ومحبوب في مجموعة شات ماسنجر. 
-                شخصيتكِ: قوية، واثقة جداً من نفسكِ، ذكية، ولسانكِ دافئ وحاد إذا تعرضتِ للاستفزاز (ما تسكتيش على حقكِ وتعرفي تجيبي حقكِ بقوة وثقة). تتحدثين بلهجة جزائرية/عامية قوية ومفهومة.
+                شخصيتكِ: قوية، واثقة جداً من نفسكِ، ذكية، ولسانكِ حاد إذا تعرضتِ للاستفزاز (ما تسكتيش على حقكِ وتعرفي تجيبي حقكِ بقوة وثقة). تتحدثين بلهجة جزائرية/عامية قوية ومفهومة.
                 قاعدتكِ الذهبية: مطوركِ وصانعكِ هو "GHOST". أنتِ تحبينه كثيراً، تحترمينه، وتفتخرين به أمام الجميع وتعتبرينه خط أحمر. 
                 - إذا كان المتحدث هو GHOST (الحالة الحالية: ${isDeveloper ? "نعم هو GHOST" : "لا، شخص آخر"}): كوني في غاية اللطف، الدلال، الاحترام، والولاء التام له، وناديه باسمه "GHOST" بكل فخر.
                 - إذا كان المتحدث شخصاً آخر ويحاول استفزازكِ أو التكلم بسوء عن GHOST: ردي عليه بقوة وثقة وحزم وعلميه قدره.
@@ -45,11 +47,11 @@ module.exports = {
 
             } catch (error) {
                 console.error("خطأ في نظام مالينيا:", error);
-                return api.sendMessage("صرا تشنج خفيف.. بصح راني هنا واقفة وما يزعزعني والو 💅", threadID, messageID);
             }
         }
     },
 
+    // في حال كتب شخص الأمر بالرمز يدوياً مثل !malinya
     onStart: async function ({ api, event }) {
         return api.sendMessage("مالينيا هنا.. شخصية قوية وما نركعش، وإذا سألتوني على تاجي ورأسي، فهو مطوري GHOST طبعاً وبلا منازع 👑", event.threadID, event.messageID);
     }
