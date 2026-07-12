@@ -1,91 +1,46 @@
-const axios = require("axios");
+const axios = require('axios');
 
 module.exports = {
   config: {
-    name: "سؤال",
-    aliases: ["ask", "س", "سؤ"],
-    version: "3.0",
-    author: "GHOST",
-    role: 0,
-    category: "ai"
+    name: "ask",
+    version: "1.0.0",
+    author: "AI Assistant",
+    countDown: 5, // وقت الانتظار بالثواني لمنع السبام
+    role: 0, // 0 = للجميع، 1 = للمشرفين، 2 = للمطور
+    description: "اسأل الذكاء الاصطناعي أي سؤال",
+    category: "ai",
+    guide: {
+      en: "{p}ask [السؤال]"
+    }
   },
 
-  onStart: async function ({ message, args }) {
-    if (!args[0]) {
-      return message.reply("✍️ اكتب سؤالك\nمثال: اين تقع اليابان");
-    }
-
-    let question = args.join(" ");
-
+  onStart: async function ({ api, event, args, reply }) {
     try {
-      // 🌐 بحث من DuckDuckGo
-      const res = await axios.get(
-        `https://api.duckduckgo.com/?q=${encodeURIComponent(question)}&format=json`
-      );
+      // دمج الكلمات التي كتبها المستخدم بعد الأمر لتكوين السؤال
+      const userQuery = args.join(" ");
 
-      let answer = res.data?.AbstractText;
-
-      // 🌍 Wikipedia كخيار ثاني
-      if (!answer || answer.length < 10) {
-        const wiki = await axios.get(
-          `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(question)}`
-        ).catch(() => null);
-
-        answer = wiki?.data?.extract;
+      // التحقق مما إذا كان المستخدم قد كتب سؤالاً بالفعل
+      if (!userQuery) {
+        return reply("⚠️ من فضلك اكتب سؤالك بعد الأمر.\nمثال: /ask ما هي عاصمة فرنسا؟");
       }
 
-      // 🧠 إذا السؤال غير مفهوم → تحليل ذكي
-      if (!answer || answer.length < 5) {
-        let guess = "";
+      reply("⏳ جاري التفكير والإجابة، انتظر لحظة...");
 
-        if (question.includes("كم")) {
-          guess = "يبدو أنك تسأل عن عدد أو إحصائية، لكن السؤال غير واضح تماماً.";
-        } else if (question.includes("اين")) {
-          guess = "يبدو أنك تسأل عن موقع جغرافي.";
-        } else if (question.includes("ما")) {
-          guess = "يبدو أنك تسأل عن تعريف أو شرح شيء ما.";
-        } else {
-          guess = "لم أستطع فهم السؤال بدقة، حاول إعادة صياغته.";
-        }
+      // رابط الـ API (يمكنك استبداله بـ API الخاص بـ Gemini أو OpenAI أو أي API مجاني متوافق)
+      const apiUrl = `https://api.popcat.xyz/chatbot?msg=${encodeURIComponent(userQuery)}`;
 
-        return message.reply(
-`╭───「 🤖 GHOST AI 」
-│ ❓ السؤال:
-│ ${question}
-│
-│ 🧠 التحليل:
-│ ${guess}
-│
-│ 💡 نصيحة:
-│ حاول كتابة السؤال بشكل أوضح
-╰───────────────`
-        );
-      }
+      // إرسال الطلب وجلب النتيجة باستخدام axios
+      const response = await axios.get(apiUrl);
+      
+      // استخراج الإجابة (تأكد من تعديل المفتاح حسب الـ API الذي تستخدمه)
+      const botAnswer = response.data.response; 
 
-      // ✨ رد نهائي مزخرف
-      return message.reply(
-`╭───「 🤖 GHOST AI 」
-│ ❓ السؤال:
-│ ${question}
-│
-│ ━━━━━━━━━━━━━
-│ 🧠 الإجابة:
-│ ${answer}
-│
-│ ━━━━━━━━━━━━━
-│ ⚡ ملاحظة:
-│ تم تحليل السؤال + جلب معلومات من الإنترنت
-╰───────────────`
-      );
+      // إرسال الرد النهائي للمستخدم في المسنجر
+      return reply(botAnswer);
 
-    } catch (err) {
-      return message.reply(
-`╭───「 ⚠️ خطأ 」
-│ لم أستطع جلب المعلومات
-│
-│ 💡 حاول مرة أخرى لاحقاً
-╰───────────────`
-      );
+    } catch (error) {
+      console.error(error);
+      return reply("❌ عذراً، حدث خطأ أثناء الاتصال بالـ API الذكي.");
     }
   }
 };
