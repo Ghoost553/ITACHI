@@ -2,8 +2,9 @@ module.exports = {
   config: {
     name: "love",
     aliases: ["المقربين", "احبائي"],
-    version: "1.0",
+    version: "1.1",
     author: "GHOST",
+    countDown: 5,
     role: 0,
     category: "fun",
     shortDescription: {
@@ -32,6 +33,8 @@ module.exports = {
 🔥 ✦『𝑰𝒕𝒂𝒄𝒉𝒊』➜ إيـتـاشـي
 
 💙 ✦『𝑬𝒊𝒉𝒂𝒃』➜ إيـهــاب
+
+🩷 ✦『𝑯𝒂𝒃𝒊𝒃𝒐』➜ حـبـيـبـو
 
 ╰━━━━━━━━━━━━━━━━━━━━━━╯
 
