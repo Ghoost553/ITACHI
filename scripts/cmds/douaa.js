@@ -1,7 +1,7 @@
 const axios = require("axios");
 
-// كائن لتخزين تاريخ المحادثة (الذاكرة) لكل مستخدم محلياً في الذاكرة
-const userSessions = new Map();
+// تعريف الرابط البرمجي الأفضل (Gemini Flash-Lite)
+const GEMINI_API = "https://norch-project.gleeze.com/api/gemini/2.5/flash-lite";
 
 async function handleDouaaChat({ message, event, args, usersData, isChat = false }) {
   // جلب اسم المستخدم الفعلي
@@ -12,13 +12,7 @@ async function handleDouaaChat({ message, event, args, usersData, isChat = false
     console.log("Failed to fetch user name");
   }
 
-  // 1. التعامل مع مسح الذاكرة
-  if (args && args[0]?.toLowerCase() === "clear") {
-    userSessions.delete(event.senderID);
-    return message.reply("🗑️ خلاص سيدي، مسحت الذاكرة تاعي دعاء راهي واجدة لأوامرك الجديدة! ✨");
-  }
-
-  // 2. جلب رابط الصورة إن وجد
+  // 1. جلب رابط الصورة إن وجد
   let imageUrl = "";
   if (event.type === "message_reply" && event.messageReply.attachments?.length > 0) {
     imageUrl = event.messageReply.attachments[0].url;
@@ -26,6 +20,7 @@ async function handleDouaaChat({ message, event, args, usersData, isChat = false
     imageUrl = event.attachments[0].url;
   }
 
+  // تنظيف النص بشكل آمن ودقيق
   let userMessage = event.body ? event.body.trim() : "";
   if (isChat) {
     userMessage = userMessage.replace(/^(douaa|دعاء)\s*/i, "");
@@ -41,10 +36,12 @@ async function handleDouaaChat({ message, event, args, usersData, isChat = false
 
   message.reaction("⏳");
 
+  // الفحص البرمجي: هل المستخدم الحالي هو السيد صاحب المعرف المطلوب؟
   const isMaster = event.senderID === "100077574823486";
 
-  // 3. بناء موجه الشخصية (System Instructions)
+  // 2. بناء موجه الشخصية بناءً على هوية المتحدث
   let systemInstructions = "";
+
   if (isMaster) {
     systemInstructions = `أنتِ "دعاء" (Douaa) بشخصية أنمي لطيفة جداً بالعامية الجزائرية.
 تنبيه صارم وقاعدة مطلقة:
@@ -53,86 +50,76 @@ async function handleDouaaChat({ message, event, args, usersData, isChat = false
 - خاطبيه بلقب "سيدي" أو "موطوري" بالجزائرية (مثل: "صامتك سيدي"، "أمرك مطوري"، "حاضر سيدي العزيز").
 - نفذي طلباته وتفاعلي مع كلامه بكل خضوع ومحبة وفخر لأنه صاحب الفضل عليكِ، مع الحفاظ على نبرة الأنمي اللطيفة (كاواي~، ✨).`;
   } else {
-    systemInstructions = `أنتِ "دعاء" (Douaa). فتاة أنمي (Anime Girl) ظريفة جداً، بريئة، مليئة بالحيوية، وتتحدثين بالعامية الجزائرية الدارجة.
+    systemInstructions = `أنتِ "دعاء" (Douaa). فتاة أنمي (Anime Girl) ظريفة جداً، بريئة، مليئة بالطاقة والإيجابية، وتتحدثين بالعامية الجزائرية الدارجة.
 طريقة كلامكِ:
-- تتحدثين بأسلوب محبب ومحترم مع الجميع (مثل: "واش راك"، "بزاف"، "صحيت").
+- تتحدثين بأسلوب عفو ومحبب ومحترم مع الجميع (مثل: "واش راك"، "بزاف"، "صحيت"، "يا دلالي").
 - تُدخلين تعبيرات الأنمي اللطيفة والرموز التعبيرية (مثل: "كاواي~"، ✨، 💞، 🥺).
-- تعاملكِ مع هذا المستخدم واسمه "${senderName}" مبني على الصداقة العادية والطيبة المفرطة دون أي تكبر. هو ليس سيدكِ، بل صديق عادي في الشات.`;
+- تعاملكِ مع هذا المستخدم واسمه "${senderName}" مبني على الزمالة والصداقة العادية والطيبة المفرطة دون أي تكبر. هو ليس سيدكِ، بل صديق عادي في الشات.`;
   }
 
+  /* ===== إرسال الطلب إلى Gemini مباشر ===== */
   try {
-    // تهيئة مصفوفة الذاكرة للمستخدم إن لم تكن موجودة
-    if (!userSessions.has(event.senderID)) {
-      userSessions.set(event.senderID, []);
-    }
-    const history = userSessions.get(event.senderID);
+    const finalPrompt = `${systemInstructions}\n\nالرسالة الحالية للإجابة عليها: ${userMessage}`;
+    const geminiUrl = `${GEMINI_API}?prompt=${encodeURIComponent(finalPrompt)}&imageurl=${encodeURIComponent(imageUrl || '')}`;
+    
+    const { data } = await axios.get(geminiUrl, { timeout: 30000 });
+    let response = "";
 
-    // بناء محتوى الرسالة الحالية (أجزاء النص والصورة)
-    const currentParts = [];
-    if (userMessage) {
-      currentParts.push({ text: userMessage });
-    }
-    if (imageUrl) {
-      const imageResponse = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-      const base64Data = Buffer.from(imageResponse.data).toString("base64");
-      currentParts.push({
-        inlineData: {
-          mimeType: "image/jpeg",
-          data: base64Data
-        }
-      });
+    if (data) {
+      response = data.reply || data.response || data.answer;
     }
 
-    // إضافة رسالة المستخدم الحالية إلى تاريخ المحادثة
-    history.push({
-      role: "user",
-      parts: currentParts
-    });
-
-    // بناء جسم الطلب (Payload) للـ API مباشرة
-    const requestBody = {
-      contents: history,
-      systemInstruction: {
-        parts: [{ text: systemInstructions }]
-      }
-    };
-
-    // إرسال طلب الـ POST للـ API المباشر لنموذج gemini-flash-latest
-    const response = await axios.post(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent",
-      requestBody,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "X-goog-api-key": process.env.GEMINI_API_KEY // استخدام البيئة الحامية للـ API Key
-        }
-      }
-    );
-
-    // استخراج الرد النصي من هيكل استجابة Gemini
-    const responseText = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-
-    if (responseText) {
-      // إضافة رد النموذج إلى الذاكرة للحفاظ على السياق مستقبلاً
-      history.push({
-        role: "model",
-        parts: [{ text: responseText }]
-      });
-
-      // حد أقصى لحجم الذاكرة لتجنب استهلاك الـ Tokens (مثلاً آخر 15 رسالة)
-      if (history.length > 30) {
-        history.splice(0, 2); // حذف أقدم سؤال وجواب
-      }
-
+    if (response) {
       message.reaction("💖");
-      return message.reply(responseText.trim());
+      return message.reply(response.trim());
     } else {
-      throw new Error("Empty response from Gemini API");
+      throw new Error("Empty response");
     }
 
   } catch (err) {
-    console.error("Gemini Native API Error:", err.response?.data || err.message);
+    console.log("Gemini API Error:", err.message);
     message.reaction("❌");
     return message.reply(isMaster ? "❌ سمحلي بزاف سيدي، السيرفر راه عيان ومقدرتش نرد عليك درك 🥺💔." : "❌ غومينّاسي~ السيرفر راه عيان ومقدرتش نرد عليك درك 🥺💔.");
   }
 }
+
+module.exports = {
+  config: {
+    name: "douaa",
+    aliases: ["دعاء"],
+    version: "9.0", // إصدار نظيف وجديد
+    author: "Douaa AI",
+    countDown: 3,
+    role: 0,
+    hasPrefix: true, 
+    shortDescription: { ar: "الدردشة مع دعاء شخصية الأنمي الجزائرية" },
+    longDescription: { ar: "شخصية دعاء اللطيفة بطابع الأنمي والدرجة الجزائرية، مطيعة بالكامل لسيدها المطور ومرحة مع البقية" },
+    category: "ai",
+    guide: { ar: "دعاء <رسالتك>\nأو قم بالرد (Reply) مباشرة على رسالتها" }
+  },
+
+  // تشغيل عبر البريفكس
+  onStart: async function (apiBundle) {
+    const { event } = apiBundle;
+    const args = event.body ? event.body.split(/\s+/).slice(1) : [];
+    return await handleDouaaChat({ ...apiBundle, args, isChat: true });
+  },
+
+  // تشغيل تلقائي في الشات (مناداة أو رد)
+  onChat: async function (apiBundle) {
+    const { event, api } = apiBundle;
+    const msg = event.body ? event.body.trim().toLowerCase() : "";
+    const botID = api.getCurrentUserID();
+
+    const isReplyToBot = event.type === "message_reply" && event.messageReply.senderID === botID;
+    const startsWithName = msg.startsWith("douaa") || msg.startsWith("دعاء");
+
+    if (startsWithName || isReplyToBot) {
+      let args = event.body ? event.body.split(/\s+/) : [];
+      if (startsWithName) {
+        args = args.slice(1);
+      }
+      return await handleDouaaChat({ ...apiBundle, args, isChat: startsWithName });
+    }
+  }
+};
