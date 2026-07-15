@@ -1,9 +1,6 @@
-const { GoogleGenAI } = require("@google/genai");
+const axios = require("axios");
 
-// تهيئة مكتبة Gemini الرسمية باستخدام مفتاح الـ API الخاص بك
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
-// كائن لتخزين الـ interaction_id الخاص بكل مستخدم محلياً في الذاكرة لتفعيل الذاكرة المستمرة
+// كائن لتخزين تاريخ المحادثة (الذاكرة) لكل مستخدم محلياً في الذاكرة
 const userSessions = new Map();
 
 async function handleDouaaChat({ message, event, args, usersData, isChat = false }) {
@@ -15,7 +12,7 @@ async function handleDouaaChat({ message, event, args, usersData, isChat = false
     console.log("Failed to fetch user name");
   }
 
-  // 1. التعامل مع مسح الذاكرة (بسيط جداً الآن، فقط نحذف الـ Session ID)
+  // 1. التعامل مع مسح الذاكرة
   if (args && args[0]?.toLowerCase() === "clear") {
     userSessions.delete(event.senderID);
     return message.reply("🗑️ خلاص سيدي، مسحت الذاكرة تاعي دعاء راهي واجدة لأوامرك الجديدة! ✨");
@@ -64,51 +61,77 @@ async function handleDouaaChat({ message, event, args, usersData, isChat = false
   }
 
   try {
-    // جلب الـ ID الخاص بالمحادثة السابقة إن وجد لتستمر "دعاء" في تذكر الكلام السابق
-    const previousInteractionId = userSessions.get(event.senderID);
+    // تهيئة مصفوفة الذاكرة للمستخدم إن لم تكن موجودة
+    if (!userSessions.has(event.senderID)) {
+      userSessions.set(event.senderID, []);
+    }
+    const history = userSessions.get(event.senderID);
 
-    // تجهيز محتويات الطلب (نص وصورة إن وجدت)
-    const contents = [];
-    if (userMessage) contents.push(userMessage);
+    // بناء محتوى الرسالة الحالية (أجزاء النص والصورة)
+    const currentParts = [];
+    if (userMessage) {
+      currentParts.push({ text: userMessage });
+    }
     if (imageUrl) {
-      contents.push({
+      const imageResponse = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+      const base64Data = Buffer.from(imageResponse.data).toString("base64");
+      currentParts.push({
         inlineData: {
-          mimeType: "image/jpeg", // أو ديناميكياً بحسب نوع الصورة
-          data: Buffer.from((await axios.get(imageUrl, { responseType: 'arraybuffer' })).data).toString("base64")
+          mimeType: "image/jpeg",
+          data: base64Data
         }
       });
     }
 
-    // إنشاء Interaction جديد باستخدام الـ SDK الرسمي ونموذج gemini-2.5-flash-lite المستقر وسريع الاستجابة
-    const interaction = await ai.interactions.create({
-      model: "gemini-2.5-flash-lite",
-      contents: contents,
-      config: {
-        systemInstruction: systemInstructions,
-        // حفظ الجلسة على السيرفر لتفعيل الذاكرة
-        store: true 
-      },
-      // ربط الجلسة الحالية بالجلسة السابقة للمستخدم
-      previousInteractionId: previousInteractionId || undefined
+    // إضافة رسالة المستخدم الحالية إلى تاريخ المحادثة
+    history.push({
+      role: "user",
+      parts: currentParts
     });
 
-    // حفظ معرف الجلسة الجديد للمرة القادمة
-    if (interaction.id) {
-      userSessions.set(event.senderID, interaction.id);
-    }
+    // بناء جسم الطلب (Payload) للـ API مباشرة
+    const requestBody = {
+      contents: history,
+      systemInstruction: {
+        parts: [{ text: systemInstructions }]
+      }
+    };
 
-    // استخراج الرد النهائي وإرساله للمستخدم
-    const responseText = interaction.modelOutput?.text || "";
+    // إرسال طلب الـ POST للـ API المباشر لنموذج gemini-flash-latest
+    const response = await axios.post(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent",
+      requestBody,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "X-goog-api-key": process.env.GEMINI_API_KEY // استخدام البيئة الحامية للـ API Key
+        }
+      }
+    );
+
+    // استخراج الرد النصي من هيكل استجابة Gemini
+    const responseText = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
     if (responseText) {
+      // إضافة رد النموذج إلى الذاكرة للحفاظ على السياق مستقبلاً
+      history.push({
+        role: "model",
+        parts: [{ text: responseText }]
+      });
+
+      // حد أقصى لحجم الذاكرة لتجنب استهلاك الـ Tokens (مثلاً آخر 15 رسالة)
+      if (history.length > 30) {
+        history.splice(0, 2); // حذف أقدم سؤال وجواب
+      }
+
       message.reaction("💖");
       return message.reply(responseText.trim());
     } else {
-      throw new Error("No output from Gemini");
+      throw new Error("Empty response from Gemini API");
     }
 
   } catch (err) {
-    console.error("Gemini Interactions API Error:", err);
+    console.error("Gemini Native API Error:", err.response?.data || err.message);
     message.reaction("❌");
     return message.reply(isMaster ? "❌ سمحلي بزاف سيدي، السيرفر راه عيان ومقدرتش نرد عليك درك 🥺💔." : "❌ غومينّاسي~ السيرفر راه عيان ومقدرتش نرد عليك درك 🥺💔.");
   }
