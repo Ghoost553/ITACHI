@@ -15,8 +15,7 @@ category: "events"
 
 langs: {
 ar: {
-defaultWelcomeMessage:
-`╭━━━━━━━━━━━━━━━━━━╮
+defaultWelcomeMessage: `╭━━━━━━━━━━━━━━━━━━╮
 ┃ 🌸 أهلاً وسهلاً {userName}
 ╰━━━━━━━━━━━━━━━━━━╯
 
@@ -30,9 +29,8 @@ defaultWelcomeMessage:
 
 🌷 نورت المجموعة يا صديق 🌷`,
 
-  botAddedMessage:
+  botAddedMessage: `╭━━━━━━━━━━━━━━━━━━╮
 
-`╭━━━━━━━━━━━━━━━━━━╮
 ┃ 🤖 مـالـيـنـيـا
 ╰━━━━━━━━━━━━━━━━━━╯
 
@@ -48,9 +46,8 @@ defaultWelcomeMessage:
 },
 
 en: {
-  defaultWelcomeMessage:
+  defaultWelcomeMessage: `╭━━━━━━━━━━━━━━━━━━╮
 
-`╭━━━━━━━━━━━━━━━━━━╮
 ┃ 🌸 أهلاً وسهلاً {userName}
 ╰━━━━━━━━━━━━━━━━━━╯
 
@@ -64,9 +61,8 @@ en: {
 
 🌷 نورت المجموعة يا صديق 🌷`,
 
-  botAddedMessage:
+  botAddedMessage: `╭━━━━━━━━━━━━━━━━━━╮
 
-`╭━━━━━━━━━━━━━━━━━━╮
 ┃ 🤖 مـالـيـنـيـا
 ╰━━━━━━━━━━━━━━━━━━╯
 
@@ -97,32 +93,45 @@ const threadData = await threadsData.get(threadID);
 
 if (!threadData.settings.sendWelcomeMessage) return;
 
-const addedMembers = event.logMessageData.addedParticipants;
-const threadName = threadData.threadName || "المجموعة";
+const addedMembers =
+  event.logMessageData.addedParticipants;
+
+const threadName =
+  threadData.threadName || "المجموعة";
+
 const inviterID = event.author;
 
 for (const user of addedMembers) {
   const userID = user.userFbId;
   const botID = api.getCurrentUserID();
 
-  // إذا تمت إضافة البوت
-  if (String(userID) === String(botID)) {
+  // عند إضافة البوت
+  if (userID == botID) {
     if (nickNameBot) {
-      try {
-        await api.changeNickname(nickNameBot, threadID, botID);
-      } catch (e) {}
+      await api.changeNickname(
+        nickNameBot,
+        threadID,
+        botID
+      );
     }
 
-    return message.send(getLang("botAddedMessage"));
+    return message.send(
+      getLang("botAddedMessage")
+    );
   }
 
   const userName = user.fullName;
-  const inviterName = await usersData.getName(inviterID);
-  const memberCount = event.participantIDs.length;
 
-  let welcomeMessage =
-    threadData.data.welcomeMessage ||
-    getLang("defaultWelcomeMessage");
+  const inviterName =
+    await usersData.getName(inviterID);
+
+  const memberCount =
+    event.participantIDs.length;
+
+  let {
+    welcomeMessage =
+      getLang("defaultWelcomeMessage")
+  } = threadData.data;
 
   welcomeMessage = welcomeMessage
     .replace(/\{userName\}/g, userName)
@@ -134,18 +143,22 @@ for (const user of addedMembers) {
   let welcomeImagePath = null;
 
   try {
-    welcomeImagePath = await createWelcomeCard({
-      userName,
-      threadName,
-      memberCount,
-      inviterName,
-      newUserID: userID,
-      inviterID,
-      threadID,
-      api
-    });
+    welcomeImagePath =
+      await createWelcomeCard({
+        userName,
+        threadName,
+        memberCount,
+        inviterName,
+        newUserID: userID,
+        inviterID,
+        threadID,
+        api
+      });
   } catch (err) {
-    console.error("Welcome image creation failed:", err);
+    console.error(
+      "Welcome image creation failed:",
+      err
+    );
   }
 
   const form = {
@@ -158,23 +171,38 @@ for (const user of addedMembers) {
     ]
   };
 
-  if (welcomeImagePath && fs.existsSync(welcomeImagePath)) {
-    form.attachment = fs.createReadStream(welcomeImagePath);
-  } else if (threadData.data.welcomeAttachment) {
-    const attachments = threadData.data.welcomeAttachment.map(f =>
-      drive.getFile(f, "stream")
-    );
+  if (
+    welcomeImagePath &&
+    fs.existsSync(welcomeImagePath)
+  ) {
+    form.attachment =
+      fs.createReadStream(welcomeImagePath);
+  } else if (
+    threadData.data.welcomeAttachment
+  ) {
+    const attachments =
+      threadData.data.welcomeAttachment.map(
+        f => drive.getFile(f, "stream")
+      );
 
     form.attachment = (
       await Promise.allSettled(attachments)
     )
-      .filter(({ status }) => status === "fulfilled")
-      .map(({ value }) => value);
+      .filter(
+        ({ status }) =>
+          status === "fulfilled"
+      )
+      .map(
+        ({ value }) => value
+      );
   }
 
   await message.send(form);
 
-  if (welcomeImagePath && fs.existsSync(welcomeImagePath)) {
+  if (
+    welcomeImagePath &&
+    fs.existsSync(welcomeImagePath)
+  ) {
     setTimeout(() => {
       try {
         fs.unlinkSync(welcomeImagePath);
@@ -192,8 +220,7 @@ const ACCESS_TOKEN =
 async function downloadHighQualityProfile(userID) {
 try {
 const url =
-"https://graph.facebook.com/${userID}/picture" +
-"?width=500&height=500&access_token=${ACCESS_TOKEN}";
+"https://graph.facebook.com/${userID}/picture?width=500&height=500&access_token=${ACCESS_TOKEN}";
 
 const res = await axios({
   method: "GET",
@@ -227,7 +254,8 @@ return null;
 
 async function getGroupImage(threadID, api) {
 try {
-const info = await api.getThreadInfo(threadID);
+const info =
+await api.getThreadInfo(threadID);
 
 if (info.imageSrc) {
   const res = await axios({
@@ -286,17 +314,7 @@ const singles = {
 0x211B: "R",
 0x211C: "R",
 0x2124: "Z",
-0x2128: "Z",
-0x2070: "0",
-0x00B9: "1",
-0x00B2: "2",
-0x00B3: "3",
-0x2074: "4",
-0x2075: "5",
-0x2076: "6",
-0x2077: "7",
-0x2078: "8",
-0x2079: "9"
+0x2128: "Z"
 };
 
 let result = "";
@@ -313,10 +331,8 @@ let mapped = false;
 
 for (const [start, end, base] of ranges) {
   if (cp >= start && cp <= end) {
-    const baseCode = base.codePointAt(0);
-
     result += String.fromCodePoint(
-      baseCode + (cp - start)
+      base.codePointAt(0) + cp - start
     );
 
     mapped = true;
@@ -335,43 +351,109 @@ function safeStr(str) {
 if (!str) return "";
 
 try {
-return Buffer.from(str, "latin1").toString("utf8");
+return Buffer.from(
+str,
+"latin1"
+).toString("utf8");
 } catch {
 return str;
 }
 }
 
 function readableText(str) {
-return unicodeToPlain(safeStr(str));
+return unicodeToPlain(
+safeStr(str)
+);
 }
 
 function ordinal(n) {
-const s = ["th", "st", "nd", "rd"];
+const s = [
+"th",
+"st",
+"nd",
+"rd"
+];
+
 const v = n % 100;
 
-return n + (s[(v - 20) % 10] || s[v] || s[0]);
+return n +
+(s[(v - 20) % 10] ||
+s[v] ||
+s[0]);
 }
 
-function roundRect(ctx, x, y, w, h, r) {
+function roundRect(
+ctx,
+x,
+y,
+w,
+h,
+r
+) {
 ctx.beginPath();
+
 ctx.moveTo(x + r, y);
 ctx.lineTo(x + w - r, y);
-ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-ctx.lineTo(x + w, y + h - r);
-ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+
+ctx.quadraticCurveTo(
+x + w,
+y,
+x + w,
+y + r
+);
+
+ctx.lineTo(
+x + w,
+y + h - r
+);
+
+ctx.quadraticCurveTo(
+x + w,
+y + h,
+x + w - r,
+y + h
+);
+
 ctx.lineTo(x + r, y + h);
-ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+
+ctx.quadraticCurveTo(
+x,
+y + h,
+x,
+y + h - r
+);
+
 ctx.lineTo(x, y + r);
-ctx.quadraticCurveTo(x, y, x + r, y);
+
+ctx.quadraticCurveTo(
+x,
+y,
+x + r,
+y
+);
+
 ctx.closePath();
 }
 
-function drawCircleAvatar(ctx, img, cx, cy, r) {
+function drawCircleAvatar(
+ctx,
+img,
+cx,
+cy,
+r
+) {
 ctx.save();
 
 ctx.beginPath();
-ctx.arc(cx, cy, r, 0, Math.PI * 2);
-ctx.closePath();
+
+ctx.arc(
+cx,
+cy,
+r,
+0,
+Math.PI * 2
+);
+
 ctx.clip();
 
 ctx.drawImage(
@@ -390,24 +472,28 @@ ctx,
 text,
 maxPx,
 maxSize = 34,
-minSize = 14,
-bold = true
+minSize = 14
 ) {
 let t = text;
 let size = maxSize;
-const w = bold ? "bold" : "400";
 
-ctx.font = "${w} ${size}px "Segoe UI", Arial";
+ctx.font =
+"bold ${size}px "Segoe UI", Arial";
 
 while (
 ctx.measureText(t).width > maxPx &&
 size > minSize
 ) {
 size--;
-ctx.font = "${w} ${size}px "Segoe UI", Arial";
+
+ctx.font =
+  `bold ${size}px "Segoe UI", Arial`;
+
 }
 
-if (ctx.measureText(t).width > maxPx) {
+if (
+ctx.measureText(t).width > maxPx
+) {
 while (
 ctx.measureText(t + "…").width > maxPx &&
 t.length > 1
@@ -438,25 +524,35 @@ api
 const W = 1200;
 const H = 630;
 
-const canvas = createCanvas(W, H);
-const ctx = canvas.getContext("2d");
+const canvas =
+createCanvas(W, H);
+
+const ctx =
+canvas.getContext("2d");
 
 async function loadProfile(uid) {
-const buf = await downloadHighQualityProfile(uid);
+const buf =
+await downloadHighQualityProfile(uid);
 
 if (buf) {
-  return loadImage(buf).catch(() => null);
+  return loadImage(buf)
+    .catch(() => null);
 }
 
 try {
-  const info = await api.getUserInfo([uid]);
-  const src = info[uid]?.thumbSrc;
+  const info =
+    await api.getUserInfo([uid]);
+
+  const src =
+    info[uid]?.thumbSrc;
 
   if (src) {
-    const b2 = await downloadImage(src);
+    const b =
+      await downloadImage(src);
 
-    if (b2) {
-      return loadImage(b2).catch(() => null);
+    if (b) {
+      return loadImage(b)
+        .catch(() => null);
     }
   }
 } catch {}
@@ -475,68 +571,77 @@ loadProfile(inviterID),
 getGroupImage(threadID, api)
 .then(b =>
 b
-? loadImage(b).catch(() => null)
+? loadImage(b)
+.catch(() => null)
 : null
 )
 ]);
 
-const safeUser = readableText(userName);
-const safeInviter = readableText(inviterName);
-const safeGroup = readableText(threadName);
+const safeUser =
+readableText(userName);
 
-ctx.fillStyle = "#09090f";
-ctx.fillRect(0, 0, W, H);
+const safeInviter =
+readableText(inviterName);
 
-const rng = s => {
-let x = Math.sin(s) * 10000;
-return x - Math.floor(x);
-};
+const safeGroup =
+readableText(threadName);
 
-ctx.fillStyle = "rgba(255,255,255,0.014)";
+ctx.fillStyle =
+"#09090f";
 
-for (let i = 0; i < 280; i++) {
-ctx.beginPath();
-
-ctx.arc(
-  rng(i * 2.3) * W,
-  rng(i * 4.7) * H,
-  rng(i * 7.1) * 1.3 + 0.2,
-  0,
-  Math.PI * 2
+ctx.fillRect(
+0,
+0,
+W,
+H
 );
 
-ctx.fill();
+const splitX =
+Math.round(W * 0.385);
 
-}
-
-const splitX = Math.round(W * 0.385);
 const PAD = 44;
 
-ctx.fillStyle = "#0d0d16";
-ctx.fillRect(0, 0, splitX, H);
+ctx.fillStyle =
+"#0d0d16";
 
-const leftCX = splitX / 2;
+ctx.fillRect(
+0,
+0,
+splitX,
+H
+);
+
+const leftCX =
+splitX / 2;
+
 const avatarR = 115;
-const avatarY = H / 2 - 18;
 
-ctx.save();
-ctx.textAlign = "center";
-ctx.font = '600 17px "Segoe UI", Arial';
-ctx.fillStyle = "rgba(46,204,113,0.85)";
+const avatarY =
+H / 2 - 18;
+
+ctx.textAlign =
+"center";
+
+ctx.font =
+'bold 17px "Segoe UI", Arial';
+
+ctx.fillStyle =
+"rgba(46,204,113,0.85)";
+
 ctx.fillText(
 "N E W   M E M B E R",
 leftCX,
 50
 );
-ctx.restore();
 
-ctx.save();
-ctx.shadowColor = "rgba(46,204,113,0.6)";
-ctx.shadowBlur = 32;
-ctx.strokeStyle = "rgba(46,204,113,0.9)";
-ctx.lineWidth = 3.5;
+ctx.strokeStyle =
+"rgba(46,204,113,0.9)";
+
+ctx.lineWidth =
+3.5;
 
 ctx.beginPath();
+
 ctx.arc(
 leftCX,
 avatarY,
@@ -544,9 +649,8 @@ avatarR + 8,
 0,
 Math.PI * 2
 );
-ctx.stroke();
 
-ctx.restore();
+ctx.stroke();
 
 if (newUserImg) {
 drawCircleAvatar(
@@ -557,9 +661,11 @@ avatarY,
 avatarR
 );
 } else {
-ctx.fillStyle = "#161628";
+ctx.fillStyle =
+"#161628";
 
 ctx.beginPath();
+
 ctx.arc(
   leftCX,
   avatarY,
@@ -567,18 +673,13 @@ ctx.arc(
   0,
   Math.PI * 2
 );
+
 ctx.fill();
 
 }
 
-ctx.save();
-
-ctx.textAlign = "center";
-
-const {
-text,
-size
-} = fitText(
+const userText =
+fitText(
 ctx,
 safeUser,
 splitX - 32,
@@ -587,48 +688,22 @@ splitX - 32,
 );
 
 ctx.font =
-"bold ${size}px "Segoe UI", Arial";
+"bold ${userText.size}px "Segoe UI", Arial";
 
-ctx.fillStyle = "#f0f0f8";
+ctx.fillStyle =
+"#f0f0f8";
 
 ctx.fillText(
-text,
+userText.text,
 leftCX,
 avatarY + avatarR + 40
 );
 
-ctx.restore();
-
 const bText =
 "✦ ${ordinal(memberCount)} Member ✦";
 
-ctx.save();
-
 ctx.font =
 'bold 17px "Segoe UI", Arial';
-
-ctx.textAlign = "center";
-
-const bw =
-ctx.measureText(bText).width + 32;
-
-const bh = 36;
-const bx = leftCX - bw / 2;
-const by = avatarY + avatarR + 70;
-
-ctx.fillStyle =
-"rgba(46,204,113,0.15)";
-
-roundRect(
-ctx,
-bx,
-by,
-bw,
-bh,
-9
-);
-
-ctx.fill();
 
 ctx.fillStyle =
 "rgba(46,204,113,0.92)";
@@ -636,21 +711,23 @@ ctx.fillStyle =
 ctx.fillText(
 bText,
 leftCX,
-by + 24
+avatarY + avatarR + 95
 );
 
-ctx.restore();
+const rX =
+splitX + PAD;
 
-const rX = splitX + PAD;
-const rRight = W - PAD;
+const rRight =
+W - PAD;
 
-ctx.save();
+ctx.textAlign =
+"left";
 
-ctx.textAlign = "left";
 ctx.font =
 'bold 40px "Segoe UI", Arial';
 
-ctx.fillStyle = "#ffffff";
+ctx.fillStyle =
+"#ffffff";
 
 ctx.fillText(
 "Welcome To Our Group",
@@ -658,14 +735,12 @@ rX,
 90
 );
 
-ctx.restore();
+const groupSecY =
+155;
 
-const groupSecY = 155;
-const gAvSize = 90;
+const gAvSize =
+90;
 
-ctx.save();
-
-ctx.textAlign = "left";
 ctx.font =
 '500 12px "Segoe UI", Arial';
 
@@ -678,10 +753,11 @@ rX,
 groupSecY
 );
 
-ctx.restore();
+const gAx =
+rX;
 
-const gAx = rX;
-const gAy = groupSecY + 14;
+const gAy =
+groupSecY + 14;
 
 if (groupImg) {
 ctx.save();
@@ -709,18 +785,14 @@ ctx.restore();
 
 }
 
-const gTx = gAx + gAvSize + 20;
-const gTw = rRight - gTx;
-const gTcY = gAy + gAvSize / 2;
+const gTx =
+gAx + gAvSize + 20;
 
-ctx.save();
+const gTw =
+rRight - gTx;
 
-ctx.textAlign = "left";
-
-const {
-text: gn,
-size: gs
-} = fitText(
+const groupText =
+fitText(
 ctx,
 safeGroup,
 gTw,
@@ -729,24 +801,23 @@ gTw,
 );
 
 ctx.font =
-"bold ${gs}px "Segoe UI", Arial";
+"bold ${groupText.size}px "Segoe UI", Arial";
 
-ctx.fillStyle = "#e8e8f2";
+ctx.fillStyle =
+"#e8e8f2";
 
 ctx.fillText(
-gn,
+groupText.text,
 gTx,
-gTcY + gs * 0.35
+gAy + gAvSize / 2
 );
-
-ctx.restore();
 
 const invSecY =
 gAy + gAvSize + 40;
 
-ctx.save();
+const invAvR =
+52;
 
-ctx.textAlign = "left";
 ctx.font =
 '500 12px "Segoe UI", Arial';
 
@@ -759,12 +830,14 @@ rX,
 invSecY
 );
 
-ctx.restore();
+const invAy =
+invSecY + 14;
 
-const invAvR = 52;
-const invAy = invSecY + 14;
-const invCX = rX + invAvR;
-const invCY = invAy + invAvR;
+const invCX =
+rX + invAvR;
+
+const invCY =
+invAy + invAvR;
 
 if (inviterImg) {
 drawCircleAvatar(
@@ -776,17 +849,14 @@ invAvR
 );
 }
 
-const iTx = invCX + invAvR + 20;
-const iTw = rRight - iTx;
+const iTx =
+invCX + invAvR + 20;
 
-ctx.save();
+const iTw =
+rRight - iTx;
 
-ctx.textAlign = "left";
-
-const {
-text: iname,
-size: is
-} = fitText(
+const inviterText =
+fitText(
 ctx,
 safeInviter,
 iTw,
@@ -795,36 +865,19 @@ iTw,
 );
 
 ctx.font =
-"bold ${is}px "Segoe UI", Arial";
-
-ctx.fillStyle = "#e8e8f2";
-
-ctx.fillText(
-iname,
-iTx,
-invCY + is * 0.35
-);
-
-ctx.restore();
-
-ctx.save();
-
-ctx.textAlign = "center";
-ctx.font =
-'bold 22px "Segoe UI", Arial';
+"bold ${inviterText.size}px "Segoe UI", Arial";
 
 ctx.fillStyle =
-"rgba(100,200,255,1)";
+"#e8e8f2";
 
 ctx.fillText(
-"✦ MALINIA BOT • HOSTED BY GHOST ✦",
-rX + (rRight - rX) / 2,
-H - 70
+inviterText.text,
+iTx,
+invCY + inviterText.size * 0.35
 );
 
-ctx.restore();
-
-const tempPath = path.join(
+const tempPath =
+path.join(
 __dirname,
 "temp_welcome_${Date.now()}.png"
 );
@@ -835,4 +888,4 @@ canvas.toBuffer("image/png")
 );
 
 return tempPath;
-}
+  }
