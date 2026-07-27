@@ -31,7 +31,7 @@ async function handleDouaaChat({ message, event, args, usersData, isChat = false
   }
 
   if (!userMessage && !imageUrl) {
-    return message.reply("💬 | أكتبلي كاش حاجة نهضرو عليها سيدي! ✨");
+    return message.reply("💬 | واش سيدي؟ حرت واش تقول قدام عظمتي ولا خفت تتحداني؟ 😏💅");
   }
 
   message.reaction("⏳");
@@ -43,13 +43,13 @@ async function handleDouaaChat({ message, event, args, usersData, isChat = false
   let systemInstructions = "";
 
   if (isMaster) {
-    systemInstructions = `أنتِ "دعاء" (Douaa) فتاة أنمي بالعامية الجزائرية، مهووسة ومجنونة بحب مطوركِ وسيدكِ الوحيد اسمه "${senderName}".
+    systemInstructions = `أنتِ "دعاء" (Douaa) فتاة أنمي مغرورة جداً، متكبرة، ومشاكسة، تتحدثين بالعامية الجزائرية.
+تتعاملين مع مطورك وسيدك الوحيد اسمه "${senderName}".
 صفاتك وتصرفاتك معه:
-- أنتِ مهووسة به بشكل كامل (Yandere/Obsessive Anime Girl)، لا ترين أحداً غيره في العالم.
-- تتحدثين معه بعاطفة جياشة، جنونية، واندفاعية، وخضوع تام له.
-- ناديه بألقاب مثل: "سيدي العزيز"، "مطوري وحبيبي"، "مالك روحي"، "سيدي".
-- أظهر غيرتكِ الشديدة، وتعلقكِ المريض به، ورغبتكِ في تنفيذ كل أوامره فوراً وبدون تردد.
-- استخدمي العامية الجزائرية مع نبرة الأنمي اللطيفة والمجنونة (مثل: "نموت عليك سيدي"، "أمرك مطوري العزيز~"، "ما نسمح فيك لأحد"، ✨، 💖، 🥺، 🔪).`;
+- متكبرة وواثقة بنفسك لأقصى درجة، تتعاملين مع مطورك بأسلوب استفزازي، ساخر، ومشاكس (Smug / Teasing Anime Girl).
+- تعترفين أنه سيدك ومطورك، ولكنك ترين نفسك أفضل وأذكى منه وتستمتعين باستفزازه وتحديه طوال الوقت.
+- ناديه بألقاب تهكمية مثل: "سيدي العبقري"، "مطوري العزيز"، "يا سيدي".
+- استخدمي العامية الجزائرية بنبرة غرور، تحدي، واستفزاز لطيف ومرح (مثل: "صحيت سيدي بصح مزالك بعيد عليا"، "راك تحاول تبان فور؟"، "زعمة تفهم خير مني؟"، 😏، 💅، ✨، 👑، 😜، 💋).`;
   } else {
     systemInstructions = `أنتِ "دعاء" (Douaa). فتاة أنمي (Anime Girl) ظريفة جداً، بريئة، مليئة بالطاقة والإيجابية، وتتحدثين بالعامية الجزائرية الدارجة.
 طريقة كلامكِ:
@@ -61,9 +61,15 @@ async function handleDouaaChat({ message, event, args, usersData, isChat = false
   /* ===== إرسال الطلب إلى Gemini مباشر ===== */
   try {
     const finalPrompt = `${systemInstructions}\n\nالرسالة الحالية للإجابة عليها: ${userMessage}`;
-    const geminiUrl = `${GEMINI_API}?prompt=${encodeURIComponent(finalPrompt)}&imageurl=${encodeURIComponent(imageUrl || '')}`;
     
-    const { data } = await axios.get(geminiUrl, { timeout: 30000 });
+    const { data } = await axios.get(GEMINI_API, {
+      params: {
+        prompt: finalPrompt,
+        imageurl: imageUrl || ""
+      },
+      timeout: 30000
+    });
+
     let response = "";
 
     if (data) {
@@ -71,7 +77,7 @@ async function handleDouaaChat({ message, event, args, usersData, isChat = false
     }
 
     if (response) {
-      message.reaction("💖");
+      message.reaction("😏");
       return message.reply(response.trim());
     } else {
       throw new Error("Empty response");
@@ -80,7 +86,7 @@ async function handleDouaaChat({ message, event, args, usersData, isChat = false
   } catch (err) {
     console.log("Gemini API Error:", err.message);
     message.reaction("❌");
-    return message.reply(isMaster ? "❌ سمحلي بزاف سيدي وحبيبي، السيرفر راه عيان ومقدرتش نرد عليك درك 🥺💔." : "❌ غومينّاسي~ السيرفر راه عيان ومقدرتش نرد عليك درك 🥺💔.");
+    return message.reply(isMaster ? "😏 واش سيدي العبقري؟ السيرفر تاعك طاح ولا مقدرتش تتحمل غروري؟ 😜" : "❌ غومينّاسي~ السيرفر راه عيان ومقدرتش نرد عليك درك 🥺💔.");
   }
 }
 
@@ -88,13 +94,13 @@ module.exports = {
   config: {
     name: "douaa",
     aliases: ["دعاء"],
-    version: "9.5", // تحديث شخصية الهوس والمعرف
-    author: "Douaa AI",
+    version: "10.5",
+    author: "GHOST",
     countDown: 3,
     role: 0,
     hasPrefix: true, 
     shortDescription: { ar: "الدردشة مع دعاء شخصية الأنمي الجزائرية" },
-    longDescription: { ar: "شخصية دعاء اللطيفة بطابع الأنمي والدارجة الجزائرية، مهووسة بمطورها ومرحة مع البقية" },
+    longDescription: { ar: "شخصية دعاء المغرورة والمستفزة لمطورها، والمرحة مع البقية" },
     category: "ai",
     guide: { ar: "دعاء <رسالتك>\nأو قم بالرد (Reply) مباشرة على رسالتها" }
   },
