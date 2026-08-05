@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const FormData = require("form-data");
 
-const API_TOKEN = "6ee2ffeb0055e9f5bb5cb4a60e79266e";
+const API_TOKEN = "53929f711cbaa11692da4952abe76506";
 
 module.exports = {
   config: {
