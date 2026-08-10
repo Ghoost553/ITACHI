@@ -17,7 +17,7 @@ module.exports = {
         const { threadID, messageID, senderID, mentions } = event;
 
         // 🆔 المعرفات المصرح لها باستخدام الأمر
-        const GHOST_ID = "61592423722586"; // آيدي المطور GHOST
+        const GHOST_ID = "61592782753057"; // آيدي المطور GHOST
         const FRIEND_ID = "61586116221933"; // آيدي الصديق NABIL
 
         // 🛡️ التحقق من أن من أرسل الأمر هو المطور أو صديقه فقط
