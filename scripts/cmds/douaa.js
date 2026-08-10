@@ -37,7 +37,7 @@ async function handleDouaaChat({ message, event, args, usersData, isChat = false
   message.reaction("⏳");
 
   // الفحص البرمجي: التعرّف على المطور بالمعرف الجديد
-  const isMaster = event.senderID === "61592423722586";
+  const isMaster = event.senderID === "61592782753057";
 
   // 2. بناء موجه الشخصية بناءً على هوية المتحدث
   let systemInstructions = "";
